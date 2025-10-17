@@ -1,0 +1,36 @@
+name: projetowell
+description: Aplicativo de monitoramento de dados vitais.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.18.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.1
+  intl: ^0.19.0
+  cupertino_icons: ^1.0.6
+  animate_do: ^2.1.0
+  mask_text_input_formatter: ^2.4.0
+  shared_preferences: ^2.2.2
+  font_awesome_flutter: ^10.8.0
+  ntl: ^0.18.1
+  http: '>=1.0.0'
+  uuid: '>=3.0.0
+  google_fonts: 6.1.0
+  fl_chart: 0.68.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  change_app_package_name: ^1.4.0
+
+flutter:
+
+  uses-material-design: true
+
+assets:
+    - assets/images/logo well.PNG
