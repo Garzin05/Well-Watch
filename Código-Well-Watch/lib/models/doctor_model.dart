@@ -46,8 +46,8 @@ class Doctor {
   }
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
-    var newMethod2;
-
+    // Extrai experience com tipo seguro e valor default
+    int newMethod2 = json['experience'] is int ? json['experience'] as int : 0;
     return Doctor(
       name: json['name'],
       email: json['email'],

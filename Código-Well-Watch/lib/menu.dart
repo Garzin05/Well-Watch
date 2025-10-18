@@ -3,9 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
-import 'theme.dart';
-import 'services/health_service.dart';
-import 'pages/home_page.dart';
+import 'package:projetowell/theme.dart';
+import 'package:projetowell/services/health_service.dart';
+import 'package:projetowell/screens/main/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

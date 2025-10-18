@@ -277,7 +277,7 @@ class HealthDataCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withAlpha((0.05 * 255).round()),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -415,7 +415,7 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton>
           decoration: BoxDecoration(
             color: widget.isLoading
                 ? (widget.backgroundColor ?? AppColors.darkBlueBackground)
-                    .withOpacity(0.7)
+                    .withAlpha((0.7 * 255).round())
                 : (widget.backgroundColor ?? AppColors.darkBlueBackground),
             borderRadius: BorderRadius.circular(8),
             boxShadow: _isPressed
@@ -424,7 +424,7 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton>
                     BoxShadow(
                       color: (widget.backgroundColor ??
                               AppColors.darkBlueBackground)
-                          .withOpacity(0.3),
+                          .withAlpha((0.3 * 255).round()),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -563,7 +563,7 @@ class MenuGridItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withAlpha((0.05 * 255).round()),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),

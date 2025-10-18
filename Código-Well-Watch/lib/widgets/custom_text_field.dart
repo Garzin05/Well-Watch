@@ -46,7 +46,7 @@ class CustomTextField extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
           hintStyle: TextStyle(
-            color: primaryColor.withOpacity(0.6),
+            color: primaryColor.withAlpha((0.6 * 255).round()),
           ),
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: primaryColor),

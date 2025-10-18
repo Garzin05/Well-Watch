@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-// Se você quiser animações no futuro
-
-import '../widgets/custom_button.dart';
-import '../widgets/app_logo.dart';
-import '../utils/constants.dart';
+import 'package:projetowell/widgets/custom_button.dart';
+import 'package:projetowell/widgets/app_logo.dart';
+import 'package:projetowell/utils/constants.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -44,7 +42,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Retorna à tela anterior
+            Navigator.pop(context);
           },
         ),
       ),
@@ -52,7 +50,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Cabeçalho com fundo escuro e logo igual ao da tela de login
               Container(
                 width: double.infinity,
                 color: AppColors.darkBackground,
@@ -72,7 +69,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ],
                 ),
               ),
-
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
@@ -155,7 +151,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 }
 
-// Botão de seleção de tipo de usuário
 class UserTypeButton extends StatelessWidget {
   final String title;
   final String description;

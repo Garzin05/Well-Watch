@@ -1,11 +1,12 @@
+// Moved login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:projetowell/utils/constants.dart';
 import 'package:projetowell/widgets/custom_text_field.dart';
 import 'package:projetowell/widgets/social_login_button.dart';
 import 'package:projetowell/widgets/app_logo.dart';
 import 'package:projetowell/services/auth_service.dart';
+import 'package:projetowell/widgets/custom_scaffold.dart';
 import 'package:projetowell/screens/main/home_page.dart';
-import 'package:projetowell/widgets/custom_scaffold.dart'; // Importe o CustomScaffold
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -84,11 +85,10 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return CustomScaffold(
       title: 'Login',
-      showBackButton: false, // Não mostra o botão de voltar
+      showBackButton: false,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header com logo
             Container(
               color: AppColors.darkBackground,
               width: double.infinity,
@@ -107,8 +107,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-
-            // Formulário de login
             Container(
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -139,23 +137,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                     ),
                     const SizedBox(height: 32),
-
-                    // Campo de usuário
                     CustomTextField(
                       labelText: AppStrings.nameLabel,
                       hintText: '',
                       controller: _usernameController,
                     ),
                     const SizedBox(height: 16),
-
-                    // Campo de senha
                     CustomTextField(
                       labelText: AppStrings.passwordLabel,
                       hintText: '',
                       controller: _passwordController,
                       obscureText: true,
                     ),
-
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -183,7 +176,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-
                     ElevatedButton(
                       onPressed: _isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
@@ -212,7 +204,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                     ),
-
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Row(
@@ -229,7 +220,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                     ),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -250,9 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 24),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
