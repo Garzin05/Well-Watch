@@ -1,3 +1,31 @@
+# Well Watch (Projeto)
+
+Instruções rápidas de desenvolvedor
+
+- Rodar app na web (Edge):
+
+```powershell
+cd 'c:\Users\Pudinga\Desktop\Well-Watch\Código-Well-Watch'
+flutter run -d edge
+```
+
+- Rodar análise estática:
+
+```powershell
+flutter analyze
+```
+
+- Rodar testes:
+
+```powershell
+flutter test
+```
+
+Estrutura importante
+- `lib/screens/auth/` - telas de autenticação e cadastro
+- `lib/screens/main/` - telas principais do app
+- `lib/services/` - serviços (AuthService, HealthService...)
+- `lib/router.dart` - rotas centralizadas
 # projetowell
 
 A new Flutter project.

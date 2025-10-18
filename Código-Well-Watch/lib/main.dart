@@ -5,9 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:projetowell/services/auth_service.dart';
 import 'package:projetowell/services/health_service.dart';
 import 'package:projetowell/screens/auth/welcome_screen.dart';
-import 'package:projetowell/screens/patient_registration_screen.dart';
-import 'package:projetowell/screens/doctor_registration_screen.dart';
-import 'package:projetowell/screens/login_screen.dart';
+import 'package:projetowell/screens/auth/patient_registration_screen.dart';
+import 'package:projetowell/screens/auth/doctor_registration_screen.dart';
+import 'package:projetowell/screens/auth/login_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
