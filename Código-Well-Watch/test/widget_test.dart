@@ -11,20 +11,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:projetowell/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('App shows Login screen', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // The initial route is the Login screen; check for the Login title
+    expect(find.text('Login'), findsWidgets);
+    // App name should be visible in the top branding area
+    expect(find.text('Well Watch'), findsWidgets);
   });
 }

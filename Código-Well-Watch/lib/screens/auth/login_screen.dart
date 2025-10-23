@@ -1,9 +1,10 @@
 // Moved login_screen.dart
 import 'package:flutter/material.dart';
-import 'package:projetowell/utils/constants.dart';
+import 'package:projetowell/utils/constants.dart' hide AppColors;
 import 'package:projetowell/widgets/custom_text_field.dart';
 import 'package:projetowell/widgets/social_login_button.dart';
 import 'package:projetowell/widgets/app_logo.dart';
+import 'package:projetowell/theme.dart';
 import 'package:projetowell/router.dart';
 import 'package:projetowell/services/auth_service.dart';
 import 'package:projetowell/widgets/custom_scaffold.dart';
@@ -93,30 +94,30 @@ class _LoginScreenState extends State<LoginScreen> {
             Container(
               color: AppColors.darkBackground,
               width: double.infinity,
-              padding: const EdgeInsets.only(top: 80, bottom: 40),
+              padding: const EdgeInsets.only(top: 72, bottom: 28),
               child: Column(
                 children: [
-                  const AppLogo(size: 80, color: Color(0xFF39D2C0)),
-                  const SizedBox(height: 16),
+                  AppLogo(size: 72, color: AppColors.lightBlueAccent),
+                  const SizedBox(height: 12),
                   Text(
                     AppStrings.appName,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           color: Colors.white,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                   ),
                 ],
               ),
             ),
             Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
+              decoration: BoxDecoration(
+                color: AppColors.cardBackground,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
                 ),
               ),
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -126,24 +127,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       AppStrings.welcomeTitle,
                       style:
                           Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.darkGrayText,
                               ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
                       AppStrings.loginSubtitle,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             color: AppColors.lightText,
                           ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     CustomTextField(
                       labelText: AppStrings.nameLabel,
                       hintText: '',
                       controller: _usernameController,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     CustomTextField(
                       labelText: AppStrings.passwordLabel,
                       hintText: '',
@@ -165,22 +166,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           AppStrings.forgotPasswordText,
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w500,
+                            color: AppColors.lightBlueAccent,
+                            fontWeight: FontWeight.w600,
                             fontSize: 13,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
+                        backgroundColor: AppColors.lightBlueAccent,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 0,
                       ),
@@ -223,21 +224,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         SocialLoginButton.facebook(
                           onPressed: () => _handleSocialLogin('Facebook'),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 12),
                         SocialLoginButton.instagram(
                           onPressed: () => _handleSocialLogin('Instagram'),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 12),
                         SocialLoginButton.google(
                           onPressed: () => _handleSocialLogin('Google'),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 12),
                         SocialLoginButton.microsoft(
                           onPressed: () => _handleSocialLogin('Microsoft'),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -257,7 +258,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             AppStrings.registerLink,
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
+                              color: AppColors.lightBlueAccent,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

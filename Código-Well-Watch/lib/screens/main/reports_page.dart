@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projetowell/theme.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({Key? key}) : super(key: key);
@@ -69,9 +70,12 @@ class _ReportsPageState extends State<ReportsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Relatórios'),
+        backgroundColor: AppColors.lightBlueAccent,
+        elevation: 0,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _createReport,
+        backgroundColor: AppColors.lightBlueAccent,
         child: const Icon(Icons.add),
       ),
       body: Padding(
@@ -80,17 +84,16 @@ class _ReportsPageState extends State<ReportsPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: const [
-                  const Icon(Icons.description,
-                      size: 42, color: Colors.black54),
-                  const SizedBox(height: 8),
-                  const Text('Relatórios', style: TextStyle(fontSize: 16)),
+                  Icon(Icons.description, size: 42, color: Colors.black54),
+                  SizedBox(height: 8),
+                  Text('Relatórios', style: TextStyle(fontSize: 16)),
                 ],
               ),
             ),
@@ -102,12 +105,15 @@ class _ReportsPageState extends State<ReportsPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.insert_drive_file,
-                          size: 48, color: Colors.grey),
+                          size: 56, color: Colors.grey),
                       const SizedBox(height: 12),
                       const Text('Nenhum relatório encontrado',
                           style: TextStyle(fontSize: 16)),
                       const SizedBox(height: 12),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.lightBlueAccent,
+                        ),
                         onPressed: _createReport,
                         child: const Text('Criar relatório'),
                       ),
@@ -124,9 +130,19 @@ class _ReportsPageState extends State<ReportsPage> {
                     final title = _reports[index]['title'] ?? 'Relatório';
                     final subtitle = _reports[index]['desc'] ?? '';
                     return ListTile(
-                      leading: const Icon(Icons.insert_drive_file),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 4.0),
+                      leading: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.cardBackground,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.insert_drive_file),
+                      ),
                       title: Text(title),
-                      subtitle: Text(subtitle),
+                      subtitle: subtitle.isNotEmpty ? Text(subtitle) : null,
                       trailing: IconButton(
                         icon: const Icon(Icons.chevron_right),
                         onPressed: () {
