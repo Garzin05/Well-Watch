@@ -4,10 +4,7 @@ import 'package:projetowell/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:projetowell/services/auth_service.dart';
 import 'package:projetowell/services/health_service.dart';
-import 'package:projetowell/screens/auth/welcome_screen.dart';
-import 'package:projetowell/screens/auth/patient_registration_screen.dart';
-import 'package:projetowell/screens/auth/doctor_registration_screen.dart';
-import 'package:projetowell/screens/auth/login_screen.dart';
+import 'package:projetowell/router.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,14 +38,8 @@ class MyApp extends StatelessWidget {
         themeMode: ThemeMode
             .dark, // Use ThemeMode.system para seguir o tema do sistema
         debugShowCheckedModeBanner: false,
-        initialRoute: '/login', // Começa direto na tela de login
-        routes: {
-          '/login': (context) => const LoginScreen(),
-          '/welcome': (context) => const WelcomeScreen(),
-          '/patient-registration': (context) =>
-              const PatientRegistrationScreen(),
-          '/doctor-registration': (context) => const DoctorRegistrationScreen(),
-        },
+        initialRoute: AppRoutes.login,
+        routes: appRoutes(),
       ),
     );
   }

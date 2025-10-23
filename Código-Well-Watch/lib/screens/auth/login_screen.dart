@@ -4,6 +4,7 @@ import 'package:projetowell/utils/constants.dart';
 import 'package:projetowell/widgets/custom_text_field.dart';
 import 'package:projetowell/widgets/social_login_button.dart';
 import 'package:projetowell/widgets/app_logo.dart';
+import 'package:projetowell/router.dart';
 import 'package:projetowell/services/auth_service.dart';
 import 'package:projetowell/widgets/custom_scaffold.dart';
 import 'package:projetowell/screens/main/home_page.dart';
@@ -153,12 +154,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Funcionalidade de recuperação de senha (a ser implementada)'),
-                            ),
-                          );
+                          Navigator.pushNamed(
+                              context, AppRoutes.passwordRecovery);
                         },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,

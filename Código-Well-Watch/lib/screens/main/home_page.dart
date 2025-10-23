@@ -10,6 +10,7 @@ import 'package:projetowell/screens/main/diabetes_page.dart';
 import 'package:projetowell/screens/main/blood_pressure_page.dart';
 import 'package:projetowell/screens/main/weight_page.dart';
 import 'package:projetowell/widgets/health_widgets.dart';
+import 'package:projetowell/router.dart';
 import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
@@ -376,11 +377,7 @@ class _HomePageState extends State<HomePage>
           icon: Icons.description,
           label: 'Relatórios',
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Funcionalidade em desenvolvimento'),
-              ),
-            );
+            Navigator.pushNamed(context, AppRoutes.reports);
           },
         ),
         MenuGridItem(

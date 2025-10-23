@@ -7,6 +7,8 @@ class AppRoutes {
   static const welcome = '/welcome';
   static const patientRegistration = '/patient-registration';
   static const doctorRegistration = '/doctor-registration';
+  static const passwordRecovery = '/password-recovery';
+  static const reports = '/reports';
   static const home = '/home';
 }
 
@@ -18,6 +20,9 @@ Map<String, WidgetBuilder> appRoutes() {
         const auth_screens.PatientRegistrationScreen(),
     AppRoutes.doctorRegistration: (context) =>
         const auth_screens.DoctorRegistrationScreen(),
+    AppRoutes.passwordRecovery: (context) =>
+        const auth_screens.PasswordRecoveryScreen(),
+    AppRoutes.reports: (context) => const main_screens.ReportsPage(),
     AppRoutes.home: (context) => const main_screens.HomePage(),
   };
 }
