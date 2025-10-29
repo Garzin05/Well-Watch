@@ -10,6 +10,20 @@ class AppColors {
   static const Color lightText = Color(0xFF6B7280);
   // Card / surface background
   static const Color cardBackground = Color(0xFFF5F7FA);
+  // Health area specific colors
+  static const Color glucoseLow = Color(0xFFD32F2F); // red
+  static const Color glucoseHigh = Color(0xFFF57C00); // orange
+  static const Color glucoseNormal = Color(0xFF2E7D32); // green
+
+  static const Color bpHigh = Color(0xFFD32F2F); // red
+  static const Color bpPre = Color(0xFFF57C00); // orange
+  static const Color bpNormal = Color(0xFF2E7D32); // green
+
+  static const Color diabetes = Color(0xFFEF6C00); // deep orange
+  static const Color agenda = Color(0xFF3F51B5); // indigo
+  static const Color weightColor = Color.fromARGB(255, 110, 142, 177);
+  static const Color reports = Color(0xFF00897B); // teal
+  static const Color others = Color(0xFF9E9E9E); // grey
 }
 
 final ThemeData lightTheme = ThemeData(

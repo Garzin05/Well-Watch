@@ -4,6 +4,7 @@ import 'package:projetowell/services/health_service.dart';
 import 'package:projetowell/models/health_data.dart';
 import 'package:projetowell/screens/main/calendar_base_page.dart';
 import 'package:projetowell/widgets/health_widgets.dart';
+import 'package:projetowell/theme.dart';
 import 'package:intl/intl.dart';
 
 class BloodPressurePage extends StatelessWidget {
@@ -156,12 +157,12 @@ class BloodPressureDataDisplay extends StatelessWidget {
     );
 
     Color getBPColor(int systolic, int diastolic) {
-      if (systolic >= 140 || diastolic >= 90) return Colors.red;
+      if (systolic >= 140 || diastolic >= 90) return AppColors.bpHigh;
       if (systolic >= 130 || diastolic >= 85) {
-        return Colors.orange;
+        return AppColors.bpPre;
       }
-      if (systolic < 90 || diastolic < 60) return Colors.red;
-      return Colors.green;
+      if (systolic < 90 || diastolic < 60) return AppColors.bpHigh;
+      return AppColors.bpNormal;
     }
 
     return Column(
@@ -214,9 +215,9 @@ class BloodPressureDataDisplay extends StatelessWidget {
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: bpColor.withAlpha((0.3 * 255).round()),
-                    width: 2,
-                  ),
+                        color: bpColor.withAlpha((0.3 * 255).round()),
+                        width: 2,
+                      ),
                 ),
                 child: Row(
                   children: [
@@ -275,7 +276,7 @@ class BloodPressureDataDisplay extends StatelessWidget {
                     IconButton(
                       icon: const Icon(
                         Icons.delete_outline,
-                        color: Colors.red,
+                        color: AppColors.bpHigh,
                       ),
                       onPressed: () {
                         Provider.of<HealthService>(
@@ -321,19 +322,19 @@ class BloodPressureDataDisplay extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 'Normal: <120/80 mmHg',
-                style: TextStyle(fontSize: 14, color: Colors.green),
+                style: TextStyle(fontSize: 14, color: AppColors.bpNormal),
               ),
               Text(
                 'Pré-hipertensão: 120-139/80-89 mmHg',
-                style: TextStyle(fontSize: 14, color: Colors.orange),
+                style: TextStyle(fontSize: 14, color: AppColors.bpPre),
               ),
               Text(
                 'Hipertensão: ≥140/90 mmHg',
-                style: TextStyle(fontSize: 14, color: Colors.red),
+                style: TextStyle(fontSize: 14, color: AppColors.bpHigh),
               ),
               Text(
                 'Hipotensão: <90/60 mmHg',
-                style: TextStyle(fontSize: 14, color: Colors.red),
+                style: TextStyle(fontSize: 14, color: AppColors.bpHigh),
               ),
             ],
           ),

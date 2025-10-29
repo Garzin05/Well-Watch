@@ -144,6 +144,9 @@ class _HomePageState extends State<HomePage>
                             valueColor: _getGlucoseColor(
                               lastGlucose.glucoseLevel,
                             ),
+                            iconColor: _getGlucoseColor(
+                              lastGlucose.glucoseLevel,
+                            ),
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -162,6 +165,10 @@ class _HomePageState extends State<HomePage>
                               lastBP.systolic,
                               lastBP.diastolic,
                             ),
+                            iconColor: _getBPColor(
+                              lastBP.systolic,
+                              lastBP.diastolic,
+                            ),
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -175,7 +182,8 @@ class _HomePageState extends State<HomePage>
                             value: lastWeight.formattedWeight,
                             subtitle: 'Hoje, ${lastWeight.time}',
                             icon: Icons.monitor_weight,
-                            valueColor: AppColors.darkBlueBackground,
+                            valueColor: const Color.fromARGB(255, 110, 142, 177),
+                            iconColor: AppColors.weightColor,
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -307,7 +315,7 @@ class _HomePageState extends State<HomePage>
         Text(
           title,
           style: const TextStyle(
-            color: AppColors.darkGrayText,
+            color: Color.fromARGB(255, 124, 122, 122),
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -333,6 +341,7 @@ class _HomePageState extends State<HomePage>
         MenuGridItem(
           icon: Icons.calendar_today,
           label: 'Agenda',
+          iconColor: AppColors.agenda,
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -344,6 +353,7 @@ class _HomePageState extends State<HomePage>
         MenuGridItem(
           icon: Icons.favorite,
           label: 'Pressão Arterial',
+          iconColor: AppColors.bpHigh,
           onTap: () {
             Navigator.push(
               context,
@@ -356,6 +366,7 @@ class _HomePageState extends State<HomePage>
         MenuGridItem(
           icon: Icons.medical_services,
           label: 'Diabetes',
+          iconColor: AppColors.diabetes,
           onTap: () {
             Navigator.push(
               context,
@@ -366,6 +377,7 @@ class _HomePageState extends State<HomePage>
         MenuGridItem(
           icon: Icons.monitor_weight,
           label: 'Peso',
+          iconColor: AppColors.weightColor,
           onTap: () {
             Navigator.push(
               context,
@@ -376,6 +388,7 @@ class _HomePageState extends State<HomePage>
         MenuGridItem(
           icon: Icons.description,
           label: 'Relatórios',
+          iconColor: AppColors.reports,
           onTap: () {
             Navigator.pushNamed(context, AppRoutes.reports);
           },
@@ -383,6 +396,7 @@ class _HomePageState extends State<HomePage>
         MenuGridItem(
           icon: Icons.more_horiz,
           label: 'Outros',
+          iconColor: AppColors.others,
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

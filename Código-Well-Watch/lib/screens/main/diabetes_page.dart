@@ -4,6 +4,7 @@ import 'package:projetowell/services/health_service.dart';
 import 'package:projetowell/models/health_data.dart';
 import 'package:projetowell/screens/main/calendar_base_page.dart';
 import 'package:projetowell/widgets/health_widgets.dart';
+import 'package:projetowell/theme.dart';
 import 'package:intl/intl.dart';
 
 class DiabetesPage extends StatelessWidget {
@@ -116,9 +117,9 @@ class DiabetesDataDisplay extends StatelessWidget {
     );
 
     Color getGlucoseColor(double level) {
-      if (level < 70) return Colors.red;
-      if (level > 180) return Colors.orange;
-      return Colors.green;
+      if (level < 70) return AppColors.glucoseLow;
+      if (level > 180) return AppColors.glucoseHigh;
+      return AppColors.glucoseNormal;
     }
 
     return Column(
@@ -221,7 +222,7 @@ class DiabetesDataDisplay extends StatelessWidget {
                     IconButton(
                       icon: const Icon(
                         Icons.delete_outline,
-                        color: Colors.red,
+                        color: AppColors.glucoseLow,
                       ),
                       onPressed: () {
                         Provider.of<HealthService>(

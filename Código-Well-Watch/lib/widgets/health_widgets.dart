@@ -252,6 +252,7 @@ class HealthDataCard extends StatelessWidget {
   final String value;
   final String? subtitle;
   final Color? valueColor;
+  final Color? iconColor;
   final IconData? icon;
   final VoidCallback? onTap;
 
@@ -261,6 +262,7 @@ class HealthDataCard extends StatelessWidget {
     required this.value,
     this.subtitle,
     this.valueColor,
+    this.iconColor,
     this.icon,
     this.onTap,
   });
@@ -286,7 +288,7 @@ class HealthDataCard extends StatelessWidget {
         child: Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, color: AppColors.darkBlueBackground, size: 24),
+              Icon(icon, color: iconColor ?? AppColors.darkBlueBackground, size: 24),
               const SizedBox(width: 16),
             ],
             Expanded(
