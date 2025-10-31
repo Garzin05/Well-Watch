@@ -10,6 +10,12 @@ class AppRoutes {
   static const passwordRecovery = '/password-recovery';
   static const reports = '/reports';
   static const home = '/home';
+  static const agenda = '/agenda';
+  static const atividade = '/atividade';
+  static const alimentacao = '/alimentacao';
+  static const perfil = '/perfil';
+  static const mensagem = '/mensagem';
+  static const inicio = '/inicio';
 }
 
 Map<String, WidgetBuilder> appRoutes() {
@@ -24,5 +30,11 @@ Map<String, WidgetBuilder> appRoutes() {
         const auth_screens.PasswordRecoveryScreen(),
     AppRoutes.reports: (context) => const main_screens.ReportsPage(),
     AppRoutes.home: (context) => const main_screens.HomePage(),
+    AppRoutes.agenda: (context) => const main_screens.AgendaPage(),
+    AppRoutes.atividade: (context) => const main_screens.ActivityPage(),
+    AppRoutes.alimentacao: (context) => const main_screens.AlimentacaoPage(),
+    AppRoutes.perfil: (context) => const main_screens.PerfilPage(),
+    AppRoutes.mensagem: (context) => const main_screens.MensagemPage(),
+    AppRoutes.inicio: (context) => const main_screens.InicioPage(),
   };
 }

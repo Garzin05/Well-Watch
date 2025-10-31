@@ -7,8 +7,8 @@ import 'package:projetowell/widgets/app_logo.dart';
 import 'package:projetowell/theme.dart';
 import 'package:projetowell/router.dart';
 import 'package:projetowell/services/auth_service.dart';
+import 'package:provider/provider.dart';
 import 'package:projetowell/widgets/custom_scaffold.dart';
-import 'package:projetowell/screens/main/home_page.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,7 +21,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
+  // O AuthService é fornecido no nível do app (MultiProvider). Vamos usá-lo via Provider
+  bool _selectedIsDoctor = false;
   bool _isLoading = false;
 
   @override
@@ -42,10 +43,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!mounted) return;
 
-    // Substitui a tela de login pela HomePage
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const HomePage()),
-    );
+    // Define username/role no AuthService e substitui a tela de login pela Home
+    final authService = Provider.of<AuthService>(context, listen: false);
+    authService.username = _usernameController.text.isNotEmpty
+        ? _usernameController.text
+        : 'Usuário';
+    authService.setRole(_selectedIsDoctor ? 'doctor' : 'patient');
+
+    Navigator.pushReplacementNamed(context, AppRoutes.home);
 
     if (mounted) {
       setState(() {
@@ -60,7 +65,8 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await _authService.socialLogin(provider);
+      final authService = Provider.of<AuthService>(context, listen: false);
+      await authService.socialLogin(provider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login com $provider bem-sucedido!')),
@@ -139,6 +145,30 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                     ),
                     const SizedBox(height: 24),
+                    // Escolha de papel: Paciente ou Médico
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ChoiceChip(
+                          key: const Key('chip_patient'),
+                          label: const Text('Paciente'),
+                          selected: !_selectedIsDoctor,
+                          onSelected: (v) => setState(() {
+                            _selectedIsDoctor = !v;
+                          }),
+                        ),
+                        const SizedBox(width: 12),
+                        ChoiceChip(
+                          key: const Key('chip_doctor'),
+                          label: const Text('Médico'),
+                          selected: _selectedIsDoctor,
+                          onSelected: (v) => setState(() {
+                            _selectedIsDoctor = v;
+                          }),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
                     CustomTextField(
                       labelText: AppStrings.nameLabel,
                       hintText: '',

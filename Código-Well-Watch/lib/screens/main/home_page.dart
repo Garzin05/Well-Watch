@@ -9,6 +9,9 @@ import 'package:projetowell/theme.dart';
 import 'package:projetowell/screens/main/diabetes_page.dart';
 import 'package:projetowell/screens/main/blood_pressure_page.dart';
 import 'package:projetowell/screens/main/weight_page.dart';
+import 'package:projetowell/screens/main/agenda_page.dart';
+import 'package:projetowell/screens/main/activity_page.dart';
+import 'package:projetowell/screens/main/alimentacao_page.dart';
 import 'package:projetowell/widgets/health_widgets.dart';
 import 'package:projetowell/router.dart';
 import 'package:intl/intl.dart';
@@ -182,7 +185,8 @@ class _HomePageState extends State<HomePage>
                             value: lastWeight.formattedWeight,
                             subtitle: 'Hoje, ${lastWeight.time}',
                             icon: Icons.monitor_weight,
-                            valueColor: const Color.fromARGB(255, 110, 142, 177),
+                            valueColor:
+                                const Color.fromARGB(255, 110, 142, 177),
                             iconColor: AppColors.weightColor,
                             onTap: () => Navigator.push(
                               context,
@@ -227,9 +231,9 @@ class _HomePageState extends State<HomePage>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildNavItem(0, Icons.person, 'Perfil'),
-                      _buildNavItem(1, Icons.home, 'Início'),
-                      _buildNavItem(2, Icons.message, 'Mensagens'),
+                      _buildNavItem(0, Icons.home, 'Início'),
+                      _buildNavItem(1, Icons.monitor_heart, 'Monitoramento'),
+                      _buildNavItem(2, Icons.description, 'Relatórios'),
                     ],
                   ),
                 ),
@@ -285,23 +289,28 @@ class _HomePageState extends State<HomePage>
             ],
           ),
           const Spacer(),
-          Container(
-            padding: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha((0.2 * 255).round()),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: const Row(
-              children: [
-                Text(
-                  'Dados Cadastrais',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+          GestureDetector(
+            onTap: () => Navigator.pushNamed(context, AppRoutes.perfil),
+            child: Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha((0.2 * 255).round()),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.person, color: Colors.white, size: 16),
+                  SizedBox(width: 6),
+                  Text(
+                    'Dados Cadastrais',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -330,6 +339,9 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildHealthMonitoringGrid() {
+    final authService = Provider.of<AuthService>(context);
+    final isDoctor = authService.role == 'doctor';
+
     return GridView.count(
       crossAxisCount: 3,
       childAspectRatio: 1.0,
@@ -343,10 +355,9 @@ class _HomePageState extends State<HomePage>
           label: 'Agenda',
           iconColor: AppColors.agenda,
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Funcionalidade em desenvolvimento'),
-              ),
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AgendaPage()),
             );
           },
         ),
@@ -385,26 +396,15 @@ class _HomePageState extends State<HomePage>
             );
           },
         ),
-        MenuGridItem(
-          icon: Icons.description,
-          label: 'Relatórios',
-          iconColor: AppColors.reports,
-          onTap: () {
-            Navigator.pushNamed(context, AppRoutes.reports);
-          },
-        ),
-        MenuGridItem(
-          icon: Icons.more_horiz,
-          label: 'Outros',
-          iconColor: AppColors.others,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Funcionalidade em desenvolvimento'),
-              ),
-            );
-          },
-        ),
+        if (isDoctor)
+          MenuGridItem(
+            icon: Icons.description,
+            label: 'Relatórios',
+            iconColor: AppColors.reports,
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.reports);
+            },
+          ),
       ],
     );
   }
@@ -423,6 +423,12 @@ class _HomePageState extends State<HomePage>
               'Atividade Física',
               Icons.directions_run,
               Colors.blue,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ActivityPage()),
+                );
+              },
             ),
           ),
           Expanded(
@@ -430,6 +436,13 @@ class _HomePageState extends State<HomePage>
               'Alimentação',
               Icons.restaurant_menu,
               Colors.green,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AlimentacaoPage()),
+                );
+              },
             ),
           ),
         ],
@@ -437,13 +450,16 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildActivityCard(String title, IconData icon, Color color) {
+  Widget _buildActivityCard(String title, IconData icon, Color color,
+      {VoidCallback? onTap}) {
     return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$title: Funcionalidade em desenvolvimento')),
-        );
-      },
+      onTap: onTap ??
+          () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text('$title: Funcionalidade em desenvolvimento')),
+            );
+          },
       child: Stack(
         children: [
           Container(
@@ -509,12 +525,11 @@ class _HomePageState extends State<HomePage>
           _selectedIndex = index;
         });
 
-        if (index != 1) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$label: Funcionalidade em desenvolvimento'),
-            ),
-          );
+        // Navega para páginas específicas para fluxo Início / Monitoramento / Final
+        if (index == 0) {
+          Navigator.pushNamed(context, AppRoutes.inicio);
+        } else if (index == 2) {
+          Navigator.pushNamed(context, AppRoutes.reports);
         }
       },
       child: Column(

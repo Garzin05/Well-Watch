@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:projetowell/services/auth_service.dart';
 import 'package:projetowell/theme.dart';
 
 class ReportsPage extends StatefulWidget {
@@ -8,157 +10,436 @@ class ReportsPage extends StatefulWidget {
   State<ReportsPage> createState() => _ReportsPageState();
 }
 
-class _ReportsPageState extends State<ReportsPage> {
-  final List<Map<String, String>> _reports = [];
+class _ReportsPageState extends State<ReportsPage>
+    with SingleTickerProviderStateMixin {
+  final List<Map<String, dynamic>> _reports = [];
+  String _selectedPeriod = 'Semana';
+  String _selectedMetric = 'Todos';
+  late TabController _tabController;
+  int _currentTab = 0;
 
-  Future<void> _createReport() async {
-    final titleController = TextEditingController();
-    final descController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        _currentTab = _tabController.index;
+      });
+    });
+    // Adicionar alguns relatórios de exemplo
+    _reports.addAll([
+      {
+        'title': 'Relatório Mensal - Maio 2024',
+        'type': 'Completo',
+        'date': '01/05/2024',
+        'metrics': ['Glicose', 'Pressão', 'Peso'],
+      },
+      {
+        'title': 'Análise de Glicemia - Abril 2024',
+        'type': 'Específico',
+        'date': '30/04/2024',
+        'metrics': ['Glicose'],
+      },
+      {
+        'title': 'Evolução Trimestral',
+        'type': 'Completo',
+        'date': '31/03/2024',
+        'metrics': ['Glicose', 'Pressão', 'Peso', 'Atividades'],
+      },
+    ]);
+  }
 
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Criar Relatório'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Título'),
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildMetricFilter() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        children: [
+          'Todos',
+          'Glicose',
+          'Pressão',
+          'Peso',
+          'Atividades',
+          'Alimentação',
+        ].map((metric) {
+          final isSelected = _selectedMetric == metric;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ChoiceChip(
+              label: Text(metric),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  _selectedMetric = metric;
+                });
+              },
+              backgroundColor: Colors.grey[200],
+              selectedColor: AppColors.darkBlueBackground,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+              ),
             ),
-            TextField(
-              controller: descController,
-              decoration: const InputDecoration(labelText: 'Descrição'),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildPeriodFilter() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        children: [
+          'Hoje',
+          'Semana',
+          'Mês',
+          'Trimestre',
+          'Ano',
+        ].map((period) {
+          final isSelected = _selectedPeriod == period;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ChoiceChip(
+              label: Text(period),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  _selectedPeriod = period;
+                });
+              },
+              backgroundColor: Colors.grey[200],
+              selectedColor: AppColors.darkBlueBackground,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildDashboardTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16.0),
+      children: [
+        _buildReportCard(
+          title: 'Média de Glicose',
+          value: '120 mg/dL',
+          trend: '↓ 5% em relação ao período anterior',
+          icon: Icons.bloodtype,
+          color: Colors.red,
+        ),
+        _buildReportCard(
+          title: 'Média de Pressão Arterial',
+          value: '120/80 mmHg',
+          trend: '↔ Estável em relação ao período anterior',
+          icon: Icons.favorite,
+          color: Colors.red,
+        ),
+        _buildReportCard(
+          title: 'Peso Médio',
+          value: '75.5 kg',
+          trend: '↑ 1% em relação ao período anterior',
+          icon: Icons.monitor_weight,
+          color: AppColors.weightColor,
+        ),
+        _buildReportCard(
+          title: 'Atividades Físicas',
+          value: '3.5h/semana',
+          trend: '↑ 15% em relação ao período anterior',
+          icon: Icons.directions_run,
+          color: Colors.blue,
+        ),
+        _buildReportCard(
+          title: 'Refeições Registradas',
+          value: '21 refeições',
+          trend: '↔ Estável em relação ao período anterior',
+          icon: Icons.restaurant_menu,
+          color: Colors.green,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReportsTab() {
+    return ListView.builder(
+      itemCount: _reports.length,
+      padding: const EdgeInsets.all(16.0),
+      itemBuilder: (context, index) {
+        final report = _reports[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12.0),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(16.0),
+            title: Text(
+              report['title'],
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                Text('Tipo: ${report['type']}'),
+                Text('Data: ${report['date']}'),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 8,
+                  children: (report['metrics'] as List<String>).map((metric) {
+                    return Chip(
+                      label: Text(
+                        metric,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      backgroundColor: Colors.grey[200],
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.download),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Download do relatório iniciado')),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildReportCard({
+    required String title,
+    required String value,
+    required String trend,
+    required IconData icon,
+    Color? color,
+  }) {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color ?? AppColors.darkBlueBackground),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              trend,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+      ),
+    );
+  }
+
+  void _createReport() async {
+    final titleController = TextEditingController();
+    final List<String> selectedMetrics = [];
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Criar Novo Relatório'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration:
+                    const InputDecoration(labelText: 'Título do Relatório'),
+              ),
+              const SizedBox(height: 16),
+              const Text('Selecione as Métricas:'),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  'Glicose',
+                  'Pressão',
+                  'Peso',
+                  'Atividades',
+                  'Alimentação',
+                ].map((metric) {
+                  return FilterChip(
+                    label: Text(metric),
+                    selected: selectedMetrics.contains(metric),
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          selectedMetrics.add(metric);
+                        } else {
+                          selectedMetrics.remove(metric);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            child: const Text('Criar'),
-          ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (titleController.text.isNotEmpty &&
+                    selectedMetrics.isNotEmpty) {
+                  Navigator.of(context).pop(true);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Preencha o título e selecione ao menos uma métrica'),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.darkBlueBackground,
+              ),
+              child: const Text('Criar'),
+            ),
+          ],
+        ),
       ),
     );
 
-    if (result == true) {
-      final newTitle = titleController.text.isEmpty
-          ? 'Relatório ${_reports.length + 1}'
-          : titleController.text;
-      final newDesc = descController.text;
+    if (result == true && titleController.text.isNotEmpty) {
+      setState(() {
+        _reports.insert(0, {
+          'title': titleController.text,
+          'type': selectedMetrics.length > 2 ? 'Completo' : 'Específico',
+          'date': DateTime.now().toString().split(' ')[0],
+          'metrics': selectedMetrics,
+        });
+      });
 
       if (!mounted) return;
 
-      setState(() {
-        _reports.insert(0, {'title': newTitle, 'desc': newDesc});
-      });
-
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Relatório criado')),
+        const SnackBar(content: Text('Relatório criado com sucesso')),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    final isDoctor = authService.role == 'doctor';
+
+    if (!isDoctor) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Relatórios'),
+          backgroundColor: AppColors.darkBlueBackground,
+        ),
+        body: const Center(
+          child: Text('Acesso restrito a médicos'),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Relatórios'),
-        backgroundColor: AppColors.lightBlueAccent,
-        elevation: 0,
+        backgroundColor: AppColors.darkBlueBackground,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.white,
+          tabs: const [
+            Tab(text: 'Dashboard'),
+            Tab(text: 'Relatórios'),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _createReport,
-        backgroundColor: AppColors.lightBlueAccent,
+        backgroundColor: AppColors.darkBlueBackground,
         child: const Icon(Icons.add),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: const [
-                  Icon(Icons.description, size: 42, color: Colors.black54),
-                  SizedBox(height: 8),
-                  Text('Relatórios', style: TextStyle(fontSize: 16)),
-                ],
+      body: Column(
+        children: [
+          if (_currentTab == 0) ...[
+            const SizedBox(height: 16),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Período',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
+            const SizedBox(height: 8),
+            _buildPeriodFilter(),
             const SizedBox(height: 16),
-            if (_reports.isEmpty) ...[
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.insert_drive_file,
-                          size: 56, color: Colors.grey),
-                      const SizedBox(height: 12),
-                      const Text('Nenhum relatório encontrado',
-                          style: TextStyle(fontSize: 16)),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.lightBlueAccent,
-                        ),
-                        onPressed: _createReport,
-                        child: const Text('Criar relatório'),
-                      ),
-                    ],
-                  ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Métricas',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ] else ...[
-              Expanded(
-                child: ListView.separated(
-                  itemCount: _reports.length,
-                  separatorBuilder: (context, index) => const Divider(),
-                  itemBuilder: (context, index) {
-                    final title = _reports[index]['title'] ?? 'Relatório';
-                    final subtitle = _reports[index]['desc'] ?? '';
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 4.0),
-                      leading: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: AppColors.cardBackground,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.insert_drive_file),
-                      ),
-                      title: Text(title),
-                      subtitle: subtitle.isNotEmpty ? Text(subtitle) : null,
-                      trailing: IconButton(
-                        icon: const Icon(Icons.chevron_right),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('$title: visualização rápida')),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+            ),
+            const SizedBox(height: 8),
+            _buildMetricFilter(),
+            const SizedBox(height: 16),
           ],
-        ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildDashboardTab(),
+                _buildReportsTab(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
