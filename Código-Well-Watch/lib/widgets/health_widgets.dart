@@ -288,7 +288,8 @@ class HealthDataCard extends StatelessWidget {
         child: Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, color: iconColor ?? AppColors.darkBlueBackground, size: 24),
+              Icon(icon,
+                  color: iconColor ?? AppColors.darkBlueBackground, size: 24),
               const SizedBox(width: 16),
             ],
             Expanded(
@@ -561,27 +562,34 @@ class MenuGridItem extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha((0.05 * 255).round()),
+              color: Colors.black.withOpacity(0.08),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
           ],
+          border: Border.all(
+            color: Colors.grey.withOpacity(0.2),
+            width: 1,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon,
-                size: 36, color: iconColor ?? AppColors.darkBlueBackground),
-            const SizedBox(height: 8),
+            Icon(
+              icon,
+              size: 40,
+              color: iconColor ?? AppColors.darkBlueBackground,
+            ),
+            const SizedBox(height: 12),
             Text(
               label,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: AppColors.darkGrayText,
               ),

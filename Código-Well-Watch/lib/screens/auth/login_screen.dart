@@ -50,7 +50,12 @@ class _LoginScreenState extends State<LoginScreen> {
         : 'Usuário';
     authService.setRole(_selectedIsDoctor ? 'doctor' : 'patient');
 
-    Navigator.pushReplacementNamed(context, AppRoutes.home);
+    // Redireciona para a página apropriada com base no papel do usuário
+    if (_selectedIsDoctor) {
+      Navigator.pushReplacementNamed(context, AppRoutes.doctorMenu);
+    } else {
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
+    }
 
     if (mounted) {
       setState(() {

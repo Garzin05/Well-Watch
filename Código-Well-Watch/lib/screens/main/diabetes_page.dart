@@ -13,7 +13,7 @@ class DiabetesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CalendarBasePage(
-      title: 'Diabetes',
+      title: 'Glicose',
       dataDisplay: const DiabetesDataDisplay(),
       actionButton: AnimatedActionButton(
         text: 'Adicionar Registro',

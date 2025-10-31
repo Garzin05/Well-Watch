@@ -84,6 +84,7 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
         }
 
         final patient = Patient(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
           name: _nameController.text,
           email: _emailController.text,
           phone: _phoneController.text,

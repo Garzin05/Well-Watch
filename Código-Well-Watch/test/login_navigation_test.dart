@@ -29,7 +29,7 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
 
-    // HomePage should show 'Início' in bottom nav
-    expect(find.text('Início'), findsWidgets);
+    // HomePage should show 'Monitoramento' in bottom nav for doctor
+    expect(find.text('Monitoramento'), findsWidgets);
   });
 }

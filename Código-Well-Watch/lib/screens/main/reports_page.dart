@@ -369,18 +369,8 @@ class _ReportsPageState extends State<ReportsPage>
     final authService = Provider.of<AuthService>(context);
     final isDoctor = authService.role == 'doctor';
 
-    if (!isDoctor) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Relatórios'),
-          backgroundColor: AppColors.darkBlueBackground,
-        ),
-        body: const Center(
-          child: Text('Acesso restrito a médicos'),
-        ),
-      );
-    }
-
+    // Todos os usuários podem visualizar o conteúdo dos relatórios, mas apenas médicos
+    // podem criar novos relatórios (FAB visível somente para médicos)
     return Scaffold(
       appBar: AppBar(
         title: const Text('Relatórios'),
@@ -394,11 +384,13 @@ class _ReportsPageState extends State<ReportsPage>
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _createReport,
-        backgroundColor: AppColors.darkBlueBackground,
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: isDoctor
+          ? FloatingActionButton(
+              onPressed: _createReport,
+              backgroundColor: AppColors.darkBlueBackground,
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: Column(
         children: [
           if (_currentTab == 0) ...[

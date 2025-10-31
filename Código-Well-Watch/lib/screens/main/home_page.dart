@@ -1,4 +1,3 @@
-// Copied from lib/pages/home_page.dart
 // ignore_for_file: deprecated_member_use, duplicate_ignore
 
 import 'package:flutter/material.dart';
@@ -25,9 +24,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  int _selectedIndex = 1; // Home selecionado por padrão
+  int _selectedIndex = 0; // Monitoramento selecionado por padrão
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+
+  // Controller e estado para busca na Home
+  final TextEditingController _searchController = TextEditingController();
+  String _searchTerm = '';
 
   @override
   void initState() {
@@ -45,6 +48,7 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     _animationController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -103,6 +107,9 @@ class _HomePageState extends State<HomePage>
                       ),
                       Expanded(
                         child: TextField(
+                          controller: _searchController,
+                          onChanged: (v) =>
+                              setState(() => _searchTerm = v.trim()),
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText: 'Pesquisar',
@@ -132,10 +139,11 @@ class _HomePageState extends State<HomePage>
                   child: ListView(
                     padding: const EdgeInsets.all(16.0),
                     children: [
-                      // Últimas medições
-                      if (lastGlucose != null ||
-                          lastBP != null ||
-                          lastWeight != null) ...[
+                      // Últimas medições (não exibe quando há busca ativa)
+                      if (_searchTerm.isEmpty &&
+                          (lastGlucose != null ||
+                              lastBP != null ||
+                              lastWeight != null)) ...[
                         _buildSectionHeader('Últimas Medições'),
                         const SizedBox(height: 12),
                         if (lastGlucose != null)
@@ -213,31 +221,35 @@ class _HomePageState extends State<HomePage>
                 ),
               ),
 
-              // Navegação inferior
-              Container(
-                color: Colors.white,
-                child: Container(
-                  height: 60,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 4,
-                        offset: Offset(0, -2),
-                      ),
-                    ],
+              // Navegação inferior (removido botão "Início")
+              Builder(builder: (context) {
+                final authService = Provider.of<AuthService>(context);
+                final isDoctor = authService.role == 'doctor';
+                return Container(
+                  color: Colors.white,
+                  child: Container(
+                    height: 60,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildNavItem(0, Icons.monitor_heart, 'Monitoramento'),
+                        if (isDoctor)
+                          _buildNavItem(1, Icons.description, 'Relatórios'),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildNavItem(0, Icons.home, 'Início'),
-                      _buildNavItem(1, Icons.monitor_heart, 'Monitoramento'),
-                      _buildNavItem(2, Icons.description, 'Relatórios'),
-                    ],
-                  ),
-                ),
-              ),
+                );
+              }),
             ],
           ),
         ),
@@ -342,70 +354,80 @@ class _HomePageState extends State<HomePage>
     final authService = Provider.of<AuthService>(context);
     final isDoctor = authService.role == 'doctor';
 
+    // Construir lista de itens e aplicar filtro de busca quando houver
+    final items = <Widget>[];
+
+    void addItem(IconData icon, String label, Color color, VoidCallback onTap) {
+      if (_searchTerm.isEmpty ||
+          label.toLowerCase().contains(_searchTerm.toLowerCase())) {
+        items.add(MenuGridItem(
+            icon: icon, label: label, iconColor: color, onTap: onTap));
+      }
+    }
+
+    addItem(Icons.calendar_today, 'Agenda', AppColors.agenda, () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AgendaPage()),
+      );
+    });
+
+    addItem(Icons.favorite, 'Pressão Arterial', AppColors.bpHigh, () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const BloodPressurePage()),
+      );
+    });
+
+    // Mostrar como 'Glicose' no grid (apenas label exibida)
+    addItem(Icons.medical_services, 'Glicose', AppColors.diabetes, () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const DiabetesPage()),
+      );
+    });
+
+    addItem(Icons.monitor_weight, 'Peso', AppColors.weightColor, () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const WeightPage()),
+      );
+    });
+
+    // Novas seções solicitadas
+    addItem(Icons.directions_run, 'Atividade Física', Colors.blue, () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ActivityPage()),
+      );
+    });
+
+    addItem(Icons.restaurant_menu, 'Alimentação', Colors.green, () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AlimentacaoPage()),
+      );
+    });
+
+    // Para médico, permitir relatórios via grid; para paciente, mostrar opção de ver relatórios
+    if (isDoctor) {
+      addItem(Icons.description, 'Relatórios', AppColors.reports, () {
+        Navigator.pushNamed(context, AppRoutes.reports);
+      });
+    } else {
+      addItem(Icons.description, 'Ver Relatórios', AppColors.reports, () {
+        Navigator.pushNamed(context, AppRoutes.reports);
+      });
+    }
+
     return GridView.count(
-      crossAxisCount: 3,
-      childAspectRatio: 1.0,
+      crossAxisCount: 2,
+      childAspectRatio: 1.05,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 16.0,
       crossAxisSpacing: 16.0,
-      children: [
-        MenuGridItem(
-          icon: Icons.calendar_today,
-          label: 'Agenda',
-          iconColor: AppColors.agenda,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AgendaPage()),
-            );
-          },
-        ),
-        MenuGridItem(
-          icon: Icons.favorite,
-          label: 'Pressão Arterial',
-          iconColor: AppColors.bpHigh,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const BloodPressurePage(),
-              ),
-            );
-          },
-        ),
-        MenuGridItem(
-          icon: Icons.medical_services,
-          label: 'Diabetes',
-          iconColor: AppColors.diabetes,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DiabetesPage()),
-            );
-          },
-        ),
-        MenuGridItem(
-          icon: Icons.monitor_weight,
-          label: 'Peso',
-          iconColor: AppColors.weightColor,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const WeightPage()),
-            );
-          },
-        ),
-        if (isDoctor)
-          MenuGridItem(
-            icon: Icons.description,
-            label: 'Relatórios',
-            iconColor: AppColors.reports,
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.reports);
-            },
-          ),
-      ],
+      children: items,
     );
   }
 
@@ -525,11 +547,12 @@ class _HomePageState extends State<HomePage>
           _selectedIndex = index;
         });
 
-        // Navega para páginas específicas para fluxo Início / Monitoramento / Final
-        if (index == 0) {
-          Navigator.pushNamed(context, AppRoutes.inicio);
-        } else if (index == 2) {
+        // Navega para páginas específicas conforme o rótulo (mais resiliente que índices)
+        final lower = label.toLowerCase();
+        if (lower.contains('relat')) {
           Navigator.pushNamed(context, AppRoutes.reports);
+        } else if (lower.contains('início') || lower.contains('inicio')) {
+          Navigator.pushNamed(context, AppRoutes.inicio);
         }
       },
       child: Column(
