@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
+import 'package:projetowell/utils/constants.dart';
 
 // Widget de calendário reutilizável
 class CalendarGrid extends StatefulWidget {
@@ -498,7 +498,7 @@ class HealthDataEntryDialog extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.darkBlueBackground,
@@ -588,7 +588,7 @@ class MenuGridItem extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: AppColors.darkGrayText,
@@ -641,7 +641,7 @@ class CustomTextField extends StatelessWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide:
-              const BorderSide(color: AppColors.darkBlueBackground, width: 2),
+              BorderSide(color: AppColors.darkBlueBackground, width: 2),
         ),
       ),
     );

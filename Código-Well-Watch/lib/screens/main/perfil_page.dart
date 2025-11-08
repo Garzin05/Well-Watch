@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:projetowell/utils/constants.dart';
 import 'package:provider/provider.dart';
-import 'package:projetowell/theme.dart';
 import 'package:projetowell/services/auth_service.dart';
 
 class PerfilPage extends StatefulWidget {

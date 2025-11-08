@@ -1,10 +1,9 @@
-// Moved login_screen.dart
 import 'package:flutter/material.dart';
-import 'package:projetowell/utils/constants.dart' hide AppColors;
+import 'package:projetowell/constansts.dart' hide AppColors;
+import 'package:projetowell/utils/constants.dart'; // Certifique-se de que está importando corretamente
 import 'package:projetowell/widgets/custom_text_field.dart';
 import 'package:projetowell/widgets/social_login_button.dart';
 import 'package:projetowell/widgets/app_logo.dart';
-import 'package:projetowell/theme.dart';
 import 'package:projetowell/router.dart';
 import 'package:projetowell/services/auth_service.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  // O AuthService é fornecido no nível do app (MultiProvider). Vamos usá-lo via Provider
   bool _selectedIsDoctor = false;
   bool _isLoading = false;
 
@@ -33,24 +31,20 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() async {
-    // Permitir login mesmo com campos vazios (sem validação de backend).
     setState(() {
       _isLoading = true;
     });
 
-    // Pequena espera para exibir o indicador de loading
     await Future.delayed(const Duration(milliseconds: 300));
 
     if (!mounted) return;
 
-    // Define username/role no AuthService e substitui a tela de login pela Home
     final authService = Provider.of<AuthService>(context, listen: false);
     authService.username = _usernameController.text.isNotEmpty
         ? _usernameController.text
         : 'Usuário';
     authService.setRole(_selectedIsDoctor ? 'doctor' : 'patient');
 
-    // Redireciona para a página apropriada com base no papel do usuário
     if (_selectedIsDoctor) {
       Navigator.pushReplacementNamed(context, AppRoutes.doctorMenu);
     } else {
@@ -80,9 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Erro ao fazer login com $provider: ${e.toString()}')),
+          SnackBar(content: Text('Erro ao fazer login com $provider: ${e.toString()}')),
         );
       }
     } finally {
@@ -103,12 +95,12 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           children: [
             Container(
-              color: AppColors.darkBackground,
+              color: AppColors.darkBackground,  // Sem parênteses
               width: double.infinity,
               padding: const EdgeInsets.only(top: 72, bottom: 28),
               child: Column(
                 children: [
-                  AppLogo(size: 72, color: AppColors.lightBlueAccent),
+                  AppLogo(size: 72, color: AppColors.lightBlueAccent),  // Sem parênteses
                   const SizedBox(height: 12),
                   Text(
                     AppStrings.appName,
@@ -122,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             Container(
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+                color: AppColors.cardBackground,  // Sem parênteses
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(28),
                   topRight: Radius.circular(28),
@@ -136,17 +128,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text(
                       AppStrings.welcomeTitle,
-                      style:
-                          Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.darkGrayText,
-                              ),
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.darkGrayText,  // Sem parênteses
+                          ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       AppStrings.loginSubtitle,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppColors.lightText,
+                            color: AppColors.lightText,  // Sem parênteses
                           ),
                     ),
                     const SizedBox(height: 24),
@@ -175,13 +166,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(
-                      labelText: AppStrings.nameLabel,
+                      labelText: AppStrings.nameLabel,  // Usando AppStrings
                       hintText: '',
                       controller: _usernameController,
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(
-                      labelText: AppStrings.passwordLabel,
+                      labelText: AppStrings.passwordLabel,  // Usando AppStrings
                       hintText: '',
                       controller: _passwordController,
                       obscureText: true,
@@ -190,8 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(
-                              context, AppRoutes.passwordRecovery);
+                          Navigator.pushNamed(context, AppRoutes.passwordRecovery);  // Usando AppRoutes
                         },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
@@ -199,9 +189,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: Text(
-                          AppStrings.forgotPasswordText,
+                          AppStrings.forgotPasswordText,  // Usando AppStrings
                           style: TextStyle(
-                            color: AppColors.lightBlueAccent,
+                            color: AppColors.lightBlueAccent,  // Sem parênteses
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
                           ),
@@ -212,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.lightBlueAccent,
+                        backgroundColor: AppColors.lightBlueAccent,  // Sem parênteses
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -230,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             )
                           : const Text(
-                              AppStrings.loginButton,
+                              AppStrings.loginButton,  // Usando AppStrings
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -245,7 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
-                              AppStrings.orDivider,
+                              AppStrings.orDivider,  // Usando AppStrings
                               style: TextStyle(color: Colors.grey[600]),
                             ),
                           ),
@@ -278,7 +268,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          AppStrings.newUserQuestion,
+                          AppStrings.newUserQuestion,  // Usando AppStrings
                           style: TextStyle(color: Colors.grey[700]),
                         ),
                         TextButton(
@@ -291,9 +281,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
-                            AppStrings.registerLink,
+                            AppStrings.registerLink,  // Usando AppStrings
                             style: TextStyle(
-                              color: AppColors.lightBlueAccent,
+                              color: AppColors.lightBlueAccent,  // Sem parênteses
                               fontWeight: FontWeight.bold,
                             ),
                           ),

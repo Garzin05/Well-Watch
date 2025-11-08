@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:projetowell/theme.dart';
+import 'package:projetowell/utils/constants.dart';
 
 class ActivityPage extends StatefulWidget {
   const ActivityPage({super.key});
@@ -64,10 +64,10 @@ class _ActivityPageState extends State<ActivityPage> {
         backgroundColor: AppColors.darkBlueBackground,
       ),
       body: _activities.isEmpty
-          ? Center(
+          ? const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Icon(Icons.directions_run, size: 64, color: Colors.grey),
                   SizedBox(height: 12),
                   Text('Nenhuma atividade registrada',

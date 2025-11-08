@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:projetowell/theme.dart';
+import 'package:projetowell/utils/constants.dart';
 
 class OutrosPage extends StatelessWidget {
   const OutrosPage({super.key});

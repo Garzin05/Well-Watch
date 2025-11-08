@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:projetowell/constansts.dart';
 import 'package:projetowell/widgets/custom_button.dart';
 import 'package:projetowell/widgets/app_logo.dart';
-import 'package:projetowell/utils/constants.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});

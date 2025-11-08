@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:projetowell/utils/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:projetowell/services/health_service.dart';
 import 'package:projetowell/models/health_data.dart';
 import 'package:projetowell/screens/main/calendar_base_page.dart';
 import 'package:projetowell/widgets/health_widgets.dart';
-import 'package:projetowell/theme.dart';
 import 'package:intl/intl.dart';
 
 class BloodPressurePage extends StatelessWidget {
@@ -274,7 +274,7 @@ class BloodPressureDataDisplay extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.delete_outline,
                         color: AppColors.bpHigh,
                       ),
@@ -312,14 +312,14 @@ class BloodPressureDataDisplay extends StatelessWidget {
             color: Colors.grey[200],
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Classificação da Pressão Arterial:',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 'Normal: <120/80 mmHg',
                 style: TextStyle(fontSize: 14, color: AppColors.bpNormal),

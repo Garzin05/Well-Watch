@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
+import 'package:projetowell/utils/constants.dart';
 
 class MenuGridItem extends StatelessWidget {
   final IconData icon;
@@ -47,7 +47,7 @@ class MenuGridItem extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 color: AppColors.darkGrayText,
                 fontWeight: FontWeight.w500,

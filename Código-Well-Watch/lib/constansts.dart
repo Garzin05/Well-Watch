@@ -31,4 +31,8 @@ class AppColors {
   static const instagramPink = Color(0xFFE4405F);
   static const googleRed = Color(0xFFDB4437);
   static const microsoftBlue = Color(0xFF0078D4);
+
+  static Color? lightBlueAccent() => null;
+
+  static Color? get darkGrayText => null;
 }

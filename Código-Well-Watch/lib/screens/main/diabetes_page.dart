@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:projetowell/utils/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:projetowell/services/health_service.dart';
 import 'package:projetowell/models/health_data.dart';
 import 'package:projetowell/screens/main/calendar_base_page.dart';
 import 'package:projetowell/widgets/health_widgets.dart';
-import 'package:projetowell/theme.dart';
 import 'package:intl/intl.dart';
 
 class DiabetesPage extends StatelessWidget {
@@ -220,7 +220,7 @@ class DiabetesDataDisplay extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.delete_outline,
                         color: AppColors.glucoseLow,
                       ),

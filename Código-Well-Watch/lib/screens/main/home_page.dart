@@ -1,10 +1,8 @@
-// ignore_for_file: deprecated_member_use, duplicate_ignore
-
 import 'package:flutter/material.dart';
+import 'package:projetowell/utils/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:projetowell/services/auth_service.dart';
 import 'package:projetowell/services/health_service.dart';
-import 'package:projetowell/theme.dart';
 import 'package:projetowell/screens/main/diabetes_page.dart';
 import 'package:projetowell/screens/main/blood_pressure_page.dart';
 import 'package:projetowell/screens/main/weight_page.dart';
@@ -22,8 +20,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0; // Monitoramento selecionado por padrão
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -273,7 +270,7 @@ class _HomePageState extends State<HomePage>
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(Icons.person,
                     color: AppColors.darkBlueBackground, size: 30),
               ),
@@ -405,7 +402,8 @@ class _HomePageState extends State<HomePage>
     addItem(Icons.restaurant_menu, 'Alimentação', Colors.green, () {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const AlimentacaoPage()),
+        MaterialPageRoute(
+            builder: (context) => const AlimentacaoPage()),
       );
     });
 
@@ -592,3 +590,4 @@ class _HomePageState extends State<HomePage>
     return Colors.green; // Normal
   }
 }
+

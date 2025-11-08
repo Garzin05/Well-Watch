@@ -109,6 +109,8 @@ class Patient {
       vitalSigns: json['vitalSigns'] as Map<String, dynamic>? ?? {},
     );
   }
+
+  latestRecord() {}
 }
 
 class MedicalRecord {

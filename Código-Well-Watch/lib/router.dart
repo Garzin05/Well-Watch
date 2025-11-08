@@ -1,10 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:projetowell/screens/auth.dart' as auth_screens;
+import 'package:projetowell/screens/doctor/pages/notifications_page.dart';
+import 'package:projetowell/screens/doctor/pages/profile_page.dart';
 import 'package:projetowell/screens/main_screens.dart' as main_screens;
-import 'package:projetowell/screens/doctor/doctor_menu_page.dart';
-import 'package:projetowell/screens/doctor/patients_page.dart';
-import 'package:projetowell/screens/doctor/notifications_page.dart';
-import 'package:projetowell/screens/doctor/profile_page.dart';
+import 'package:projetowell/screens/doctor/pages/doctor_menu_page.dart';
+
+import 'screens/doctor/pages/patients_page.dart';
 
 class AppRoutes {
   static const login = '/login';

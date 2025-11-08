@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:projetowell/constansts.dart';
 import 'package:projetowell/main.dart';
-import 'package:projetowell/utils/constants.dart';
 
 void main() {
   testWidgets('Login selects doctor and navigates to Home', (tester) async {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:projetowell/theme.dart';
+import 'package:projetowell/utils/constants.dart';
 
 class MensagemPage extends StatefulWidget {
   const MensagemPage({super.key});
