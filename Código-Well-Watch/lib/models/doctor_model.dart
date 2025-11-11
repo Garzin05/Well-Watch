@@ -42,7 +42,7 @@ class Doctor {
     this.isAvailable = true,
     this.rating = 0.0,
     this.totalPatients = 0,
-    this.totalAppointments = 0,
+    this.totalAppointments = 0, required String password,
   });
 
   Map<String, dynamic> toJson() {
@@ -95,7 +95,7 @@ class Doctor {
       isAvailable: json['isAvailable'] as bool? ?? true,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       totalPatients: json['totalPatients'] as int? ?? 0,
-      totalAppointments: json['totalAppointments'] as int? ?? 0,
+      totalAppointments: json['totalAppointments'] as int? ?? 0, password: '',
     );
   }
 }

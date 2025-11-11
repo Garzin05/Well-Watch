@@ -43,7 +43,6 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Well Watch',
         theme: lightTheme.copyWith(
-          useMaterial3: true,
           pageTransitionsTheme: const PageTransitionsTheme(
             builders: {
               TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -52,7 +51,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
         darkTheme: darkTheme.copyWith(
-          useMaterial3: true,
           pageTransitionsTheme: const PageTransitionsTheme(
             builders: {
               TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -77,8 +75,3 @@ class MyApp extends StatelessWidget {
   }
 }
 
-extension on Future<ThemeData> {
-  ThemeData? copyWith({required bool useMaterial3, required PageTransitionsTheme pageTransitionsTheme}) {
-    return null;
-  }
-}

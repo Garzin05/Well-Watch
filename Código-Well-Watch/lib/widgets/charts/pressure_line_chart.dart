@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
 
 class PressureLineChart extends StatelessWidget {
   final List<double> systolic;   // sistólica ex: 120

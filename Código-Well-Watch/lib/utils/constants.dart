@@ -25,7 +25,11 @@ class AppColors {
   static const Color agenda = Color(0xFF3F51B5); // Indigo for agenda
   static const Color weightColor = Color.fromARGB(255, 110, 142, 177); // Weight color
   static const Color reports = Color(0xFF00897B); // Teal for reports
-  static const Color others = Color(0xFF9E9E9E); // Grey for other purposes
+  static const Color others = Color(0xFF9E9E9E);
+
+  static Color? get primaryBlue => null;
+
+  static Null get lightGrayBorder => null; // Grey for other purposes
 }
 
 final ThemeData lightTheme = ThemeData(
@@ -182,6 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var backgroundColor = null;
     return CustomScaffold(
       title: 'Login',
       showBackButton: false,
@@ -262,14 +267,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     CustomTextField(
                       labelText: AppStrings.nameLabel,
                       hintText: '',
-                      controller: _usernameController,
+                      controller: _usernameController, label: '',
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(
                       labelText: AppStrings.passwordLabel,
                       hintText: '',
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: true, label: '',
                     ),
                     Align(
                       alignment: Alignment.centerRight,
@@ -392,7 +397,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ),
-      onBackPressed: () {},
+      onBackPressed: () {}, backgroundColor: backgroundColor,
     );
   }
 }

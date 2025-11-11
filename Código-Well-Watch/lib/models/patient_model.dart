@@ -42,7 +42,7 @@ class Patient {
     this.medicalHistory = const [],
     this.appointments = const [],
     this.profileImage = '',
-    this.vitalSigns = const {},
+    this.vitalSigns = const {}, required String password, required String cpf,
   });
 
   Map<String, dynamic> toJson() {
@@ -106,7 +106,7 @@ class Patient {
             )
           : [],
       profileImage: json['profileImage'] as String? ?? '',
-      vitalSigns: json['vitalSigns'] as Map<String, dynamic>? ?? {},
+      vitalSigns: json['vitalSigns'] as Map<String, dynamic>? ?? {}, password: '', cpf: '',
     );
   }
 

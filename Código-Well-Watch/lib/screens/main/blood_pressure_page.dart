@@ -143,6 +143,8 @@ class BloodPressurePage extends StatelessWidget {
       ),
     );
   }
+  
+  HealthDataEntryDialog({required String title, required List<Form> formFields, required Null Function() onSave}) {}
 }
 
 class BloodPressureDataDisplay extends StatelessWidget {

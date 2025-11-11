@@ -8,7 +8,7 @@ class CustomScaffold extends StatelessWidget {
   const CustomScaffold({super.key, 
     required this.body,
     required this.title,
-    this.showBackButton = true, required Null Function() onBackPressed, // Por padrão, o botão de voltar será exibido
+    this.showBackButton = true, required Null Function() onBackPressed, required Color backgroundColor, // Por padrão, o botão de voltar será exibido
   });
 
   @override

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class PasswordRecoveryScreen extends StatefulWidget {
-  const PasswordRecoveryScreen({Key? key}) : super(key: key);
+  const PasswordRecoveryScreen({super.key});
 
   @override
   State<PasswordRecoveryScreen> createState() => _PasswordRecoveryScreenState();

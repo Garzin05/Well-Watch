@@ -33,14 +33,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // Paleta de cores padrão do projeto
+    const Color primaryColor = Color(0xFF39D2C0); // Ciano do logo
+    const Color backgroundDark = Color(0xFF0B1214); // Azul escuro do fundo
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Bem-vindo'),
+        backgroundColor: backgroundDark,
+        elevation: 0,
+        title: const Text(
+          'Bem-vindo',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -50,25 +61,29 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // TOPO
               Container(
                 width: double.infinity,
-                color: AppColors.darkBackground,
+                color: backgroundDark,
                 padding: const EdgeInsets.only(top: 60, bottom: 40),
                 child: Column(
                   children: [
-                    const AppLogo(size: 80, color: Color(0xFF39D2C0)),
+                    const AppLogo(size: 80, color: primaryColor),
                     const SizedBox(height: 16),
                     Text(
                       AppStrings.appName,
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                      ),
                     ),
                   ],
                 ),
               ),
+
+              // CONTEÚDO
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
@@ -77,41 +92,52 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     const SizedBox(height: 20),
                     Text(
                       'Sua saúde em boas mãos',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.black87,
+                      style: TextStyle(
+                        color: Colors.grey.shade800,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24),
+
+                    // MENSAGEM DE ORIENTAÇÃO
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primary
-                            .withAlpha((0.1 * 255).round()),
+                        color: primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         'Selecione como deseja se cadastrar',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w500,
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
                         ),
                         textAlign: TextAlign.center,
                       ),
                     ),
                     const SizedBox(height: 32),
-                    _buildUserTypeSelection(theme),
+
+                    // BOTÕES DE SELEÇÃO
+                    _buildUserTypeSelection(primaryColor),
                     const SizedBox(height: 40),
+
+                    // BOTÃO CONTINUAR
                     CustomButton(
                       text: 'Continuar para Cadastro',
                       icon: Icons.arrow_forward,
-                      onPressed: _selectedUserType != null
-                          ? _navigateToRegistration
-                          : null,
+                      onPressed:
+                          _selectedUserType != null ? _navigateToRegistration : null,
                       isPrimary: true,
                     ),
                     const SizedBox(height: 20),
+
+                    // BOTÃO LOGIN
                     CustomButton(
                       text: 'Já tenho conta',
                       icon: Icons.login,
@@ -128,7 +154,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
-  Widget _buildUserTypeSelection(ThemeData theme) {
+  Widget _buildUserTypeSelection(Color primaryColor) {
     return Column(
       children: [
         UserTypeButton(
@@ -137,6 +163,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           icon: Icons.person,
           onPressed: () => _selectUserType('patient'),
           isSelected: _selectedUserType == 'patient',
+          primaryColor: primaryColor,
         ),
         const SizedBox(height: 16),
         UserTypeButton(
@@ -145,6 +172,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           icon: Icons.medical_services,
           onPressed: () => _selectUserType('doctor'),
           isSelected: _selectedUserType == 'doctor',
+          primaryColor: primaryColor,
         ),
       ],
     );
@@ -157,6 +185,7 @@ class UserTypeButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
   final bool isSelected;
+  final Color primaryColor;
 
   const UserTypeButton({
     super.key,
@@ -165,45 +194,60 @@ class UserTypeButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     required this.isSelected,
+    required this.primaryColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onPressed,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary.withAlpha((0.1 * 255).round())
-              : Colors.white,
+          color: isSelected ? primaryColor.withOpacity(0.12) : Colors.white,
           border: Border.all(
-            color:
-                isSelected ? theme.colorScheme.primary : Colors.grey.shade300,
+            color: isSelected ? primaryColor : Colors.grey.shade300,
             width: 2,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: primaryColor.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(icon, size: 32, color: theme.colorScheme.primary),
-            const SizedBox(width: 16),
+            Icon(
+              icon,
+              size: 36,
+              color: primaryColor,
+            ),
+            const SizedBox(width: 18),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                      height: 1.3,
                     ),
                   ),
                 ],

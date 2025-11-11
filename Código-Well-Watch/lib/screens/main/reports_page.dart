@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:projetowell/services/auth_service.dart';
 
 class ReportsPage extends StatefulWidget {
-  const ReportsPage({Key? key}) : super(key: key);
+  const ReportsPage({super.key});
 
   @override
   State<ReportsPage> createState() => _ReportsPageState();

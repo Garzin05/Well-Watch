@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:projetowell/widgets/custom_scaffold.dart';
-
 import 'package:projetowell/models/patient_model.dart';
 import 'package:projetowell/widgets/custom_text_field.dart';
 import 'package:projetowell/widgets/custom_dropdown_field.dart';
@@ -30,6 +29,8 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
   final _phoneController = TextEditingController();
   final _ageController = TextEditingController();
   final _addressController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   String _gender = 'Masculino';
   String _bloodType = 'A+';
@@ -60,102 +61,135 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
     _phoneController.dispose();
     _ageController.dispose();
     _addressController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+    if (!_formKey.currentState!.validate()) return;
 
-      try {
-        final isEmailRegistered =
-            await _storageService.isEmailRegistered(_emailController.text);
-        if (isEmailRegistered) {
-          _showError('Este e-mail já está cadastrado');
-          setState(() => _isLoading = false);
-          return;
-        }
+    setState(() => _isLoading = true);
 
-        final age = int.tryParse(_ageController.text);
-        if (age == null || age <= 0) {
-          _showError('Idade inválida');
-          setState(() => _isLoading = false);
-          return;
-        }
+    try {
+      final email = _emailController.text.trim();
+      final isEmailRegistered = await _storageService.isEmailRegistered(email);
 
-        final patient = Patient(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: _nameController.text,
-          email: _emailController.text,
-          phone: _phoneController.text,
-          age: age,
-          gender: _gender,
-          bloodType: _bloodType,
-          address: _addressController.text,
-          allergies: _allergies,
-          currentMedications: _medications,
-          createdAt: DateTime.now().toIso8601String(),
-        );
-
-        await _storageService.savePatient(patient);
-
-        if (!mounted) return;
-
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (context) => RegistrationSuccessScreen(
-              userType: 'patient',
-              userName: patient.name,
-            ),
-          ),
-          (route) => false,
-        );
-      } catch (e) {
-        _showError('Erro ao salvar dados: ${e.toString()}');
-      } finally {
-        if (mounted) setState(() => _isLoading = false);
+      if (isEmailRegistered) {
+        _showError('Este e-mail já está cadastrado.');
+        setState(() => _isLoading = false);
+        return;
       }
+
+      final age = int.tryParse(_ageController.text);
+      if (age == null || age <= 0) {
+        _showError('Por favor, insira uma idade válida.');
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      if (_passwordController.text != _confirmPasswordController.text) {
+        _showError('As senhas não coincidem.');
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final patient = Patient(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: _nameController.text.trim(),
+        email: email,
+        phone: _phoneController.text.trim(),
+        age: age,
+        gender: _gender,
+        bloodType: _bloodType,
+        address: _addressController.text.trim(),
+        allergies: _allergies,
+        currentMedications: _medications,
+        password: _passwordController.text.trim(),
+        createdAt: DateTime.now().toIso8601String(), cpf: '',
+      );
+
+      await _storageService.savePatient(patient);
+
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => RegistrationSuccessScreen(
+            userType: 'patient',
+            userName: patient.name,
+          ),
+        ),
+        (route) => false,
+      );
+    } catch (e) {
+      _showError('Erro ao salvar os dados. Tente novamente.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: Theme.of(context).colorScheme.error,
+        content: Text(message,
+            style: const TextStyle(fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.redAccent,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = ThemeData(
+      scaffoldBackgroundColor: const Color(0xFF0B1214),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF39D2C0),
+        brightness: Brightness.dark,
+        primary: const Color(0xFF39D2C0),
+        secondary: const Color(0xFF2FA89E),
+      ),
+      textTheme: const TextTheme(
+        titleMedium: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        bodyMedium: TextStyle(
+          color: Colors.white70,
+          fontSize: 16,
+        ),
+      ),
+    );
 
-    return CustomScaffold(
-      title: 'Cadastro de Paciente',
-      showBackButton: true,
-      onBackPressed: () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-      },
-      body: SafeArea(
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(24),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _buildPersonalInfoSection(theme),
-                const SizedBox(height: 32),
-                _buildHealthInfoSection(theme),
-                const SizedBox(height: 32),
-                _buildSubmitButton(),
-              ],
+    return Theme(
+      data: theme,
+      child: CustomScaffold(
+        title: 'Cadastro de Paciente',
+        showBackButton: true,
+        onBackPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          );
+        },
+        backgroundColor: const Color(0xFF0B1214),
+        body: SafeArea(
+          child: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(24),
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  _buildPersonalInfoSection(theme),
+                  const SizedBox(height: 32),
+                  _buildHealthInfoSection(theme),
+                  const SizedBox(height: 32),
+                  _buildSubmitButton(),
+                ],
+              ),
             ),
           ),
         ),
@@ -169,26 +203,20 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Informações Pessoais',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
-            ),
-          ),
+          Text('Informações Pessoais', style: theme.textTheme.titleMedium),
           const SizedBox(height: 20),
           CustomTextField(
             labelText: 'Nome Completo',
             hintText: 'Digite seu nome completo',
             controller: _nameController,
-            prefixIcon: Icon(Icons.person, color: theme.colorScheme.primary),
+            prefixIcon: Icon(Icons.person, color: theme.colorScheme.primary), label: '',
           ),
           CustomTextField(
             labelText: 'E-mail',
             hintText: 'Digite seu e-mail',
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            prefixIcon: Icon(Icons.email, color: theme.colorScheme.primary),
+            prefixIcon: Icon(Icons.email, color: theme.colorScheme.primary), label: '',
           ),
           CustomTextField(
             labelText: 'Telefone',
@@ -196,7 +224,7 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             inputFormatters: [_phoneMaskFormatter],
-            prefixIcon: Icon(Icons.phone, color: theme.colorScheme.primary),
+            prefixIcon: Icon(Icons.phone, color: theme.colorScheme.primary), label: '',
           ),
           Row(
             children: [
@@ -206,8 +234,7 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
                   hintText: 'Digite sua idade',
                   controller: _ageController,
                   keyboardType: TextInputType.number,
-                  prefixIcon: Icon(Icons.calendar_today,
-                      color: theme.colorScheme.primary),
+                  prefixIcon: Icon(Icons.cake, color: theme.colorScheme.primary), label: '',
                 ),
               ),
               const SizedBox(width: 16),
@@ -228,7 +255,27 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
             labelText: 'Endereço',
             hintText: 'Digite seu endereço completo',
             controller: _addressController,
-            prefixIcon: Icon(Icons.home, color: theme.colorScheme.primary),
+            prefixIcon: Icon(Icons.home, color: theme.colorScheme.primary), label: '',
+          ),
+          CustomTextField(
+            labelText: 'Senha',
+            hintText: 'Digite sua senha',
+            controller: _passwordController,
+            obscureText: true,
+            prefixIcon: Icon(Icons.lock, color: theme.colorScheme.primary), label: '',
+          ),
+          CustomTextField(
+            labelText: 'Confirme sua senha',
+            hintText: 'Repita sua senha',
+            controller: _confirmPasswordController,
+            obscureText: true,
+            prefixIcon: Icon(Icons.lock, color: theme.colorScheme.primary),
+            validator: (value) {
+              if (value != _passwordController.text) {
+                return 'As senhas não coincidem';
+              }
+              return null;
+            }, label: '',
           ),
         ],
       ),
@@ -241,13 +288,7 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Informações de Saúde',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
-            ),
-          ),
+          Text('Informações de Saúde', style: theme.textTheme.titleMedium),
           const SizedBox(height: 20),
           CustomDropdownField<String>(
             labelText: 'Tipo Sanguíneo',

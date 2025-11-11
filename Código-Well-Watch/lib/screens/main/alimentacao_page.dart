@@ -49,7 +49,7 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<String>(
-              value: null,
+              initialValue: null,
               decoration: const InputDecoration(labelText: 'Tipo de Refeição'),
               items: const [
                 DropdownMenuItem(

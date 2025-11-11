@@ -104,6 +104,8 @@ class WeightPage extends StatelessWidget {
       ),
     );
   }
+  
+  HealthDataEntryDialog({required String title, required List<Form> formFields, required Null Function() onSave}) {}
 }
 
 class WeightDataDisplay extends StatelessWidget {

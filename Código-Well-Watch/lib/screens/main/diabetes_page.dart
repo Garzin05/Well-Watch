@@ -103,6 +103,8 @@ class DiabetesPage extends StatelessWidget {
       ),
     );
   }
+  
+  HealthDataEntryDialog({required String title, required List<Form> formFields, required Null Function() onSave}) {}
 }
 
 class DiabetesDataDisplay extends StatelessWidget {

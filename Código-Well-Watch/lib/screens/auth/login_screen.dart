@@ -1,6 +1,6 @@
+// lib/screens/auth/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:projetowell/constansts.dart' hide AppColors;
-import 'package:projetowell/utils/constants.dart'; // Certifique-se de que está importando corretamente
 import 'package:projetowell/widgets/custom_text_field.dart';
 import 'package:projetowell/widgets/social_login_button.dart';
 import 'package:projetowell/widgets/app_logo.dart';
@@ -88,110 +88,135 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF39D2C0); // Ciano do logo
+    const Color darkBackground = Color(0xFF0B1214); // Azul escuro padrão
+
     return CustomScaffold(
       title: 'Login',
       showBackButton: false,
+      backgroundColor: Colors.white, // <--- ADICIONADO (obrigatório)
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // TOPO COM LOGO
             Container(
-              color: AppColors.darkBackground,  // Sem parênteses
+              color: darkBackground,
               width: double.infinity,
               padding: const EdgeInsets.only(top: 72, bottom: 28),
               child: Column(
                 children: [
-                  AppLogo(size: 72, color: AppColors.lightBlueAccent),  // Sem parênteses
+                  const AppLogo(size: 80, color: primaryColor),
                   const SizedBox(height: 12),
                   Text(
                     AppStrings.appName,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ],
               ),
             ),
+
+            // CONTEÚDO
             Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardBackground,  // Sem parênteses
-                borderRadius: const BorderRadius.only(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(28),
                   topRight: Radius.circular(28),
                 ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      AppStrings.welcomeTitle,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.darkGrayText,  // Sem parênteses
-                          ),
+                      'Bem-vindo de volta!',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                        color: Colors.black87,
+                      ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      AppStrings.loginSubtitle,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppColors.lightText,  // Sem parênteses
-                          ),
+                    const Text(
+                      'Acesse sua conta para continuar',
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 15,
+                      ),
                     ),
                     const SizedBox(height: 24),
-                    // Escolha de papel: Paciente ou Médico
+
+                    // Escolha de papel
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ChoiceChip(
-                          key: const Key('chip_patient'),
                           label: const Text('Paciente'),
+                          labelStyle: TextStyle(
+                            color: !_selectedIsDoctor ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          backgroundColor: Colors.grey.shade200,
+                          selectedColor: primaryColor,
                           selected: !_selectedIsDoctor,
-                          onSelected: (v) => setState(() {
-                            _selectedIsDoctor = !v;
-                          }),
+                          onSelected: (v) {
+                            setState(() => _selectedIsDoctor = !v);
+                          },
                         ),
                         const SizedBox(width: 12),
                         ChoiceChip(
-                          key: const Key('chip_doctor'),
                           label: const Text('Médico'),
+                          labelStyle: TextStyle(
+                            color: _selectedIsDoctor ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          backgroundColor: Colors.grey.shade200,
+                          selectedColor: primaryColor,
                           selected: _selectedIsDoctor,
-                          onSelected: (v) => setState(() {
-                            _selectedIsDoctor = v;
-                          }),
+                          onSelected: (v) {
+                            setState(() => _selectedIsDoctor = v);
+                          },
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 20),
+
+                    // Campos de login
                     CustomTextField(
-                      labelText: AppStrings.nameLabel,  // Usando AppStrings
-                      hintText: '',
+                      labelText: 'Usuário',
+                      hintText: 'Digite seu nome',
                       controller: _usernameController,
+                      label: '',
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(
-                      labelText: AppStrings.passwordLabel,  // Usando AppStrings
-                      hintText: '',
+                      labelText: 'Senha',
+                      hintText: 'Digite sua senha',
                       controller: _passwordController,
                       obscureText: true,
+                      label: '',
                     ),
+
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, AppRoutes.passwordRecovery);  // Usando AppRoutes
+                          Navigator.pushNamed(context, AppRoutes.passwordRecovery);
                         },
                         style: TextButton.styleFrom(
+                          foregroundColor: primaryColor,
                           padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        child: Text(
-                          AppStrings.forgotPasswordText,  // Usando AppStrings
+                        child: const Text(
+                          'Esqueceu a senha?',
                           style: TextStyle(
-                            color: AppColors.lightBlueAccent,  // Sem parênteses
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
                           ),
@@ -199,50 +224,54 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
+
+                    // BOTÃO LOGIN
                     ElevatedButton(
                       onPressed: _isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.lightBlueAccent,  // Sem parênteses
+                        backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        elevation: 0,
                       ),
                       child: _isLoading
                           ? const SizedBox(
-                              height: 20,
-                              width: 20,
+                              height: 22,
+                              width: 22,
                               child: CircularProgressIndicator(
                                 color: Colors.white,
-                                strokeWidth: 2,
+                                strokeWidth: 2.5,
                               ),
                             )
                           : const Text(
-                              AppStrings.loginButton,  // Usando AppStrings
+                              'Entrar',
                               style: TextStyle(
+                                fontSize: 17,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
                               ),
                             ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Row(
-                        children: [
-                          const Expanded(child: Divider()),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              AppStrings.orDivider,  // Usando AppStrings
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
+                    const SizedBox(height: 24),
+
+                    // DIVISOR
+                    Row(
+                      children: [
+                        const Expanded(child: Divider()),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'ou continue com',
+                            style: TextStyle(color: Colors.grey.shade600),
                           ),
-                          const Expanded(child: Divider()),
-                        ],
-                      ),
+                        ),
+                        const Expanded(child: Divider()),
+                      ],
                     ),
+                    const SizedBox(height: 20),
+
+                    // LOGIN SOCIAL
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -263,27 +292,27 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 26),
+
+                    // RODAPÉ
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          AppStrings.newUserQuestion,  // Usando AppStrings
-                          style: TextStyle(color: Colors.grey[700]),
+                          'Novo por aqui?',
+                          style: TextStyle(color: Colors.grey.shade700),
                         ),
                         TextButton(
                           onPressed: () {
                             Navigator.pushNamed(context, '/welcome');
                           },
                           style: TextButton.styleFrom(
+                            foregroundColor: primaryColor,
                             padding: const EdgeInsets.symmetric(horizontal: 4),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: Text(
-                            AppStrings.registerLink,  // Usando AppStrings
+                          child: const Text(
+                            'Cadastre-se',
                             style: TextStyle(
-                              color: AppColors.lightBlueAccent,  // Sem parênteses
                               fontWeight: FontWeight.bold,
                             ),
                           ),

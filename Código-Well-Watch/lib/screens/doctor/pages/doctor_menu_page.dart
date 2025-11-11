@@ -1,8 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-// import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'package:fl_chart/fl_chart.dart';
+import 'package:projetowell/widgets/app_logo.dart';
 
 // Importar suas páginas
 import 'reports_page.dart';
@@ -41,9 +39,9 @@ class DoctorMenuPage extends StatelessWidget {
 
   // Paleta de cores médicas
   static const healthColors = {
-    'primary': Color(0xFF1976D2),     // Azul médico principal
+    'primary': Color.fromARGB(255, 2, 31, 48),     // Azul médico principal
     'accent': Color(0xFF00B8A9),      // Verde água hospitalar
-    'warning': Color(0xFFE94E77),      // Rosa alerta
+    'warning': Color(0xFFE94E77),     // Rosa alerta
     'info': Color(0xFF1BA6B8),        // Azul informação
     'surface': Color(0xFFF5F9FF),     // Fundo suave
     'cardLight': Color(0xFFFFFFFF),   // Branco cartões
@@ -54,11 +52,11 @@ class DoctorMenuPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: healthColors['surface'],
       appBar: AppBar(
-        title: Row(
+        title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.local_hospital, color: Colors.white),
-            const SizedBox(width: 8),
+            AppLogo(size: 32), // Substituindo o ícone pelo logo
+            const SizedBox(height: 8), // Espaçamento entre o logo e o texto
             Text(
               'Well Watch',
               style: GoogleFonts.poppins(
@@ -331,15 +329,15 @@ class _HeroHeader extends StatelessWidget {
 
 class BlobPainter extends CustomPainter {
   final Color color;
-  
+
   BlobPainter({required this.color});
-  
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-      
+
     final path = Path()
       ..moveTo(0, size.height * 0.7)
       ..quadraticBezierTo(
@@ -356,10 +354,10 @@ class BlobPainter extends CustomPainter {
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height);
-      
+
     canvas.drawPath(path, paint);
   }
-  
+
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
@@ -564,7 +562,7 @@ class _RoundedFeatureButtonState extends State<RoundedFeatureButton>
   @override
   Widget build(BuildContext context) {
     final color = DoctorMenuPage.healthColors['primary']!;
-    
+
     return MouseRegion(
       onEnter: (_) => _controller.forward(),
       onExit: (_) => _controller.reverse(),
@@ -754,55 +752,7 @@ class _MainDrawer extends StatelessWidget {
               onNavigate('relatorios');
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.calendar_month),
-            title: const Text('Agenda'),
-            onTap: () {
-              Navigator.pop(context);
-              onNavigate('agenda');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.people),
-            title: const Text('Pacientes'),
-            onTap: () {
-              Navigator.pop(context);
-              onNavigate('pacientes');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.notifications),
-            title: const Text('Notificações'),
-            onTap: () {
-              Navigator.pop(context);
-              onNavigate('notificacoes');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Perfil'),
-            onTap: () {
-              Navigator.pop(context);
-              onNavigate('perfil');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Configurações'),
-            onTap: () {
-              Navigator.pop(context);
-              onNavigate('config');
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.exit_to_app),
-            title: const Text('Sair'),
-            onTap: () {
-              Navigator.pop(context);
-              onNavigate('sair');
-            },
-          ),
+          // Outros itens de menu...
         ],
       ),
     );
