@@ -14,39 +14,45 @@ class ApiService {
   // ==========================================================
   // LOGIN (paciente ou médico)
   // ==========================================================
-  static Future<Map<String, dynamic>> login({
-    required String email,
-    required String password,
-    String role = "patient",
-  }) async {
-    final url = Uri.parse("$baseUrl/login.php");
+ static Future<Map<String, dynamic>> login({
+  required String email,
+  required String password,
+  String role = "patient",
+}) async {
+  final url = Uri.parse("$baseUrl/login.php");
 
+  try {
+    // Envia JSON corretamente e define headers
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+        "Accept": "application/json",
+      },
+      body: jsonEncode({
+        "email": email.trim(),
+        "password": password.trim(),
+        "role": role,
+      }),
+    );
+
+    // Decodifica o JSON recebido
     try {
-      final response = await http.post(
-        url,
-        body: {
-          "email": email.trim(),
-          "password": password.trim(),
-          "role": role,
-        },
-      );
-
-      // ✅ Verifica se a resposta realmente é JSON antes de decodificar
-      if (response.headers['content-type']?.contains('application/json') ?? false) {
-        return jsonDecode(response.body);
-      } else {
-        return {
-          "status": false,
-          "message": "Resposta inesperada do servidor: ${response.body}",
-        };
-      }
-    } catch (e) {
+      final data = jsonDecode(response.body);
+      return data;
+    } catch (_) {
       return {
         "status": false,
-        "message": "Erro de conexão com o servidor: $e",
+        "message": "Resposta inválida do servidor: ${response.body}",
       };
     }
+  } catch (e) {
+    return {
+      "status": false,
+      "message": "Erro de conexão com o servidor: $e",
+    };
   }
+}
 
   // ==========================================================
   // CADASTRO DE PACIENTE
