@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:animate_do/animate_do.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+
 import 'package:projetowell/widgets/custom_scaffold.dart';
-import 'package:projetowell/models/patient_model.dart';
 import 'package:projetowell/widgets/custom_text_field.dart';
 import 'package:projetowell/widgets/custom_dropdown_field.dart';
 import 'package:projetowell/widgets/custom_chips_input.dart';
 import 'package:projetowell/widgets/custom_button.dart';
-import 'package:projetowell/services/storage_service.dart';
 import 'package:projetowell/screens/auth/registration_success_screen.dart';
 import 'package:projetowell/screens/auth/login_screen.dart';
 
@@ -21,7 +23,6 @@ class PatientRegistrationScreen extends StatefulWidget {
 
 class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _storageService = StorageService();
   bool _isLoading = false;
 
   final _nameController = TextEditingController();
@@ -66,69 +67,74 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
     super.dispose();
   }
 
+  // ===========================================
+  // ✅ Função para enviar o cadastro ao PHP
+  // ===========================================
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      _showError('As senhas não coincidem.');
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      final email = _emailController.text.trim();
-      final isEmailRegistered = await _storageService.isEmailRegistered(email);
+      // Detecta se é Web ou Emulador Android
+      final String baseUrl = kIsWeb
+          ? "http://localhost/WellWatchAPI"
+          : "http://10.0.2.2/WellWatchAPI";
 
-      if (isEmailRegistered) {
-        _showError('Este e-mail já está cadastrado.');
-        setState(() => _isLoading = false);
-        return;
-      }
+      final Uri url = Uri.parse("$baseUrl/register_patient.php");
 
-      final age = int.tryParse(_ageController.text);
-      if (age == null || age <= 0) {
-        _showError('Por favor, insira uma idade válida.');
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      if (_passwordController.text != _confirmPasswordController.text) {
-        _showError('As senhas não coincidem.');
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      final patient = Patient(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text.trim(),
-        email: email,
-        phone: _phoneController.text.trim(),
-        age: age,
-        gender: _gender,
-        bloodType: _bloodType,
-        address: _addressController.text.trim(),
-        allergies: _allergies,
-        currentMedications: _medications,
-        password: _passwordController.text.trim(),
-        createdAt: DateTime.now().toIso8601String(), cpf: '',
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+           "name": _nameController.text.trim(),
+  "email": _emailController.text.trim(),
+  "password": _passwordController.text.trim(),
+  "telefone": _phoneController.text.trim(),
+  "idade": _ageController.text.trim(),
+  "genero": _gender,
+  "endereco": _addressController.text.trim(),
+  "tipo_sanguineo": _bloodType,
+  "alergias": _allergies.join(", "),
+  "medicacoes_atuais": _medications.join(", "),
+  "altura": null,
+  "peso_inicial": null
+        }),
       );
 
-      await _storageService.savePatient(patient);
+      // Converte a resposta JSON
+      final data = jsonDecode(response.body);
 
-      if (!mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => RegistrationSuccessScreen(
-            userType: 'patient',
-            userName: patient.name,
+      if (response.statusCode == 200 && data["status"] == true) {
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RegistrationSuccessScreen(
+              userType: 'patient',
+              userName: _nameController.text.trim(),
+            ),
           ),
-        ),
-        (route) => false,
-      );
+          (route) => false,
+        );
+      } else {
+        _showError(data["message"] ?? "Erro ao cadastrar paciente.");
+      }
     } catch (e) {
-      _showError('Erro ao salvar os dados. Tente novamente.');
+      _showError("Erro de conexão com o servidor.");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  // ===========================================
+  // ✅ Mensagem de erro
+  // ===========================================
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -139,6 +145,9 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
     );
   }
 
+  // ===========================================
+  // ✅ INTERFACE GRÁFICA
+  // ===========================================
   @override
   Widget build(BuildContext context) {
     final theme = ThemeData(
@@ -209,14 +218,16 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
             labelText: 'Nome Completo',
             hintText: 'Digite seu nome completo',
             controller: _nameController,
-            prefixIcon: Icon(Icons.person, color: theme.colorScheme.primary), label: '',
+            prefixIcon: Icon(Icons.person, color: theme.colorScheme.primary),
+            label: '',
           ),
           CustomTextField(
             labelText: 'E-mail',
             hintText: 'Digite seu e-mail',
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            prefixIcon: Icon(Icons.email, color: theme.colorScheme.primary), label: '',
+            prefixIcon: Icon(Icons.email, color: theme.colorScheme.primary),
+            label: '',
           ),
           CustomTextField(
             labelText: 'Telefone',
@@ -224,7 +235,8 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             inputFormatters: [_phoneMaskFormatter],
-            prefixIcon: Icon(Icons.phone, color: theme.colorScheme.primary), label: '',
+            prefixIcon: Icon(Icons.phone, color: theme.colorScheme.primary),
+            label: '',
           ),
           Row(
             children: [
@@ -234,7 +246,8 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
                   hintText: 'Digite sua idade',
                   controller: _ageController,
                   keyboardType: TextInputType.number,
-                  prefixIcon: Icon(Icons.cake, color: theme.colorScheme.primary), label: '',
+                  prefixIcon: Icon(Icons.cake, color: theme.colorScheme.primary),
+                  label: '',
                 ),
               ),
               const SizedBox(width: 16),
@@ -255,14 +268,16 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
             labelText: 'Endereço',
             hintText: 'Digite seu endereço completo',
             controller: _addressController,
-            prefixIcon: Icon(Icons.home, color: theme.colorScheme.primary), label: '',
+            prefixIcon: Icon(Icons.home, color: theme.colorScheme.primary),
+            label: '',
           ),
           CustomTextField(
             labelText: 'Senha',
             hintText: 'Digite sua senha',
             controller: _passwordController,
             obscureText: true,
-            prefixIcon: Icon(Icons.lock, color: theme.colorScheme.primary), label: '',
+            prefixIcon: Icon(Icons.lock, color: theme.colorScheme.primary),
+            label: '',
           ),
           CustomTextField(
             labelText: 'Confirme sua senha',
@@ -275,7 +290,8 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
                 return 'As senhas não coincidem';
               }
               return null;
-            }, label: '',
+            },
+            label: '',
           ),
         ],
       ),

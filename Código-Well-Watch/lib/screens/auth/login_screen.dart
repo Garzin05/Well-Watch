@@ -1,13 +1,14 @@
 // lib/screens/auth/login_screen.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:projetowell/constansts.dart' hide AppColors;
 import 'package:projetowell/widgets/custom_text_field.dart';
 import 'package:projetowell/widgets/social_login_button.dart';
 import 'package:projetowell/widgets/app_logo.dart';
 import 'package:projetowell/router.dart';
-import 'package:projetowell/services/auth_service.dart';
-import 'package:provider/provider.dart';
 import 'package:projetowell/widgets/custom_scaffold.dart';
+import 'package:projetowell/services/api_service.dart'; // ✅ Novo import
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,71 +31,74 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() async {
-    setState(() {
-      _isLoading = true;
-    });
+  // ✅ LOGIN com verificação no banco de dados
+  Future<void> _handleLogin() async {
+    final email = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+    final role = _selectedIsDoctor ? 'doctor' : 'patient';
 
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    if (!mounted) return;
-
-    final authService = Provider.of<AuthService>(context, listen: false);
-    authService.username = _usernameController.text.isNotEmpty
-        ? _usernameController.text
-        : 'Usuário';
-    authService.setRole(_selectedIsDoctor ? 'doctor' : 'patient');
-
-    if (_selectedIsDoctor) {
-      Navigator.pushReplacementNamed(context, AppRoutes.doctorMenu);
-    } else {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+    if (email.isEmpty || password.isEmpty) {
+      _showError('Preencha todos os campos.');
+      return;
     }
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+    setState(() => _isLoading = true);
+
+    try {
+     final response = await ApiService.login(
+  email: email,
+  password: password,
+  role: role,
+);
+
+      if (response["status"] == true) {
+        // ✅ Sucesso: redireciona de acordo com o tipo
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Login realizado com sucesso!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        if (role == 'doctor') {
+          Navigator.pushReplacementNamed(context, AppRoutes.doctorMenu);
+        } else {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        }
+      } else {
+        // ❌ Erro (senha incorreta, usuário não encontrado etc.)
+        _showError(response["message"] ?? "E-mail ou senha incorretos.");
+      }
+    } catch (e) {
+      _showError("Erro ao conectar com o servidor.");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _handleSocialLogin(String provider) async {
-    setState(() {
-      _isLoading = true;
-    });
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent,
+      ),
+    );
+  }
 
-    try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      await authService.socialLogin(provider);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login com $provider bem-sucedido!')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao fazer login com $provider: ${e.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
+  // (Social login mantido como placeholder)
+  void _handleSocialLogin(String provider) async {
+    _showError("Login com $provider ainda não implementado.");
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF39D2C0); // Ciano do logo
-    const Color darkBackground = Color(0xFF0B1214); // Azul escuro padrão
+    const Color primaryColor = Color(0xFF39D2C0);
+    const Color darkBackground = Color(0xFF0B1214);
 
     return CustomScaffold(
       title: 'Login',
       showBackButton: false,
-      backgroundColor: Colors.white, // <--- ADICIONADO (obrigatório)
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -113,7 +117,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 26,
-                      letterSpacing: 0.5,
                     ),
                   ),
                 ],
@@ -135,9 +138,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
+                    const Text(
                       'Bem-vindo de volta!',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 22,
                         color: Colors.black87,
@@ -153,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Escolha de papel
+                    // Escolha de tipo de usuário
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -166,9 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           backgroundColor: Colors.grey.shade200,
                           selectedColor: primaryColor,
                           selected: !_selectedIsDoctor,
-                          onSelected: (v) {
-                            setState(() => _selectedIsDoctor = !v);
-                          },
+                          onSelected: (v) => setState(() => _selectedIsDoctor = !v),
                         ),
                         const SizedBox(width: 12),
                         ChoiceChip(
@@ -180,9 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           backgroundColor: Colors.grey.shade200,
                           selectedColor: primaryColor,
                           selected: _selectedIsDoctor,
-                          onSelected: (v) {
-                            setState(() => _selectedIsDoctor = v);
-                          },
+                          onSelected: (v) => setState(() => _selectedIsDoctor = v),
                         ),
                       ],
                     ),
@@ -190,8 +189,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // Campos de login
                     CustomTextField(
-                      labelText: 'Usuário',
-                      hintText: 'Digite seu nome',
+                      labelText: 'E-mail',
+                      hintText: 'Digite seu e-mail',
                       controller: _usernameController,
                       label: '',
                     ),
@@ -279,16 +278,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () => _handleSocialLogin('Facebook'),
                         ),
                         const SizedBox(width: 12),
-                        SocialLoginButton.instagram(
-                          onPressed: () => _handleSocialLogin('Instagram'),
-                        ),
-                        const SizedBox(width: 12),
                         SocialLoginButton.google(
                           onPressed: () => _handleSocialLogin('Google'),
-                        ),
-                        const SizedBox(width: 12),
-                        SocialLoginButton.microsoft(
-                          onPressed: () => _handleSocialLogin('Microsoft'),
                         ),
                       ],
                     ),
@@ -308,13 +299,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           style: TextButton.styleFrom(
                             foregroundColor: primaryColor,
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
                           ),
                           child: const Text(
                             'Cadastre-se',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],

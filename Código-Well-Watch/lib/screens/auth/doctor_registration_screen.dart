@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'package:projetowell/widgets/custom_text_field.dart';
 import 'package:projetowell/widgets/custom_button.dart';
 import 'package:projetowell/widgets/custom_scaffold.dart';
 import 'package:projetowell/screens/auth/registration_success_screen.dart';
-import 'package:projetowell/services/storage_service.dart';
-import 'package:projetowell/models/doctor_model.dart'; // ✅ modelo correto
 
 class DoctorRegistrationScreen extends StatefulWidget {
   const DoctorRegistrationScreen({super.key});
 
   @override
-  State<DoctorRegistrationScreen> createState() => _DoctorRegistrationScreenState();
+  State<DoctorRegistrationScreen> createState() =>
+      _DoctorRegistrationScreenState();
 }
 
 class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _storageService = StorageService();
 
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -48,49 +48,55 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
     super.dispose();
   }
 
+  // ✅ função para enviar dados ao backend PHP
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+    if (!_formKey.currentState!.validate()) return;
 
-      try {
-        final isEmailRegistered = await _storageService.isEmailRegistered(_emailController.text);
-        if (isEmailRegistered) {
-          _showError('Este e-mail já está cadastrado.');
-          setState(() => _isLoading = false);
-          return;
-        }
+    if (_passwordController.text != _confirmPasswordController.text) {
+      _showError("As senhas não coincidem!");
+      return;
+    }
 
-        // ✅ agora usando o modelo do arquivo doctor_model.dart
-        var yearsOfExperience = null;
-        final doctor = Doctor(
-          name: _nameController.text.trim(),
-          email: _emailController.text.trim(),
-          crm: _crmController.text.trim(),
-          phone: _phoneController.text.trim(),
-          specialty: _specialtyController.text.trim(),
-          password: _passwordController.text.trim(),
-          createdAt: DateTime.now().toIso8601String(), id: '', clinicAddress: '', yearsOfExperience: yearsOfExperience, hospital: '', education: '', specialization: '', gender: '', skills: [], about: '', workingHours: [],
-        );
+    setState(() => _isLoading = true);
 
-        await _storageService.saveDoctor(doctor);
+    try {
+      // 🔗 URL da API local (ajuste se for Android Emulator)
+      const String apiUrl = "http://localhost/WellWatchAPI/register_doctor.php";
 
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "name": _nameController.text.trim(),
+          "email": _emailController.text.trim(),
+          "crm": _crmController.text.trim(),
+          "phone": _phoneController.text.trim(),
+          "specialty": _specialtyController.text.trim(),
+          "password": _passwordController.text.trim(),
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data["status"] == true) {
         if (!mounted) return;
-
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => RegistrationSuccessScreen(
               userType: 'doctor',
-              userName: doctor.name,
+              userName: _nameController.text.trim(),
             ),
           ),
           (route) => false,
         );
-      } catch (e) {
-        _showError('Erro ao salvar dados. Tente novamente.');
-      } finally {
-        if (mounted) setState(() => _isLoading = false);
+      } else {
+        _showError(data["message"] ?? "Erro ao cadastrar médico.");
       }
+    } catch (e) {
+      _showError("Erro de conexão com o servidor.");
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -140,7 +146,8 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             ),
           ),
         ),
-      ), onBackPressed: () {  },
+      ),
+      onBackPressed: () {},
     );
   }
 
@@ -154,7 +161,9 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             hintText: 'Digite o nome completo',
             controller: _nameController,
             prefixIcon: const Icon(Icons.person, color: Colors.white),
-            validator: (v) => v!.isEmpty ? 'Informe o nome completo' : null, label: '',
+            validator: (v) =>
+                v!.isEmpty ? 'Informe o nome completo' : null,
+            label: '',
           ),
           const SizedBox(height: 12),
           CustomTextField(
@@ -167,7 +176,8 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
               if (v!.isEmpty) return 'Informe o e-mail';
               if (!v.contains('@')) return 'E-mail inválido';
               return null;
-            }, label: '',
+            },
+            label: '',
           ),
           const SizedBox(height: 12),
           CustomTextField(
@@ -175,7 +185,8 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             hintText: 'Digite o número do CRM',
             controller: _crmController,
             prefixIcon: const Icon(Icons.badge, color: Colors.white),
-            validator: (v) => v!.isEmpty ? 'Informe o CRM' : null, label: '',
+            validator: (v) => v!.isEmpty ? 'Informe o CRM' : null,
+            label: '',
           ),
           const SizedBox(height: 12),
           CustomTextField(
@@ -185,7 +196,8 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             keyboardType: TextInputType.phone,
             inputFormatters: [_phoneMaskFormatter],
             prefixIcon: const Icon(Icons.phone, color: Colors.white),
-            validator: (v) => v!.isEmpty ? 'Informe o telefone' : null, label: '',
+            validator: (v) => v!.isEmpty ? 'Informe o telefone' : null,
+            label: '',
           ),
           const SizedBox(height: 12),
           CustomTextField(
@@ -193,7 +205,8 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             hintText: 'Digite a especialidade médica',
             controller: _specialtyController,
             prefixIcon: const Icon(Icons.medical_services, color: Colors.white),
-            validator: (v) => v!.isEmpty ? 'Informe a especialidade' : null, label: '',
+            validator: (v) => v!.isEmpty ? 'Informe a especialidade' : null,
+            label: '',
           ),
           const SizedBox(height: 12),
           CustomTextField(
@@ -202,7 +215,9 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             controller: _passwordController,
             obscureText: true,
             prefixIcon: const Icon(Icons.lock, color: Colors.white),
-            validator: (v) => v!.length < 6 ? 'Mínimo de 6 caracteres' : null, label: '',
+            validator: (v) =>
+                v!.length < 6 ? 'Mínimo de 6 caracteres' : null,
+            label: '',
           ),
           const SizedBox(height: 12),
           CustomTextField(
@@ -210,9 +225,12 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             hintText: 'Confirme sua senha',
             controller: _confirmPasswordController,
             obscureText: true,
-            prefixIcon: const Icon(Icons.lock_outline, color: Colors.white),
-            validator: (v) =>
-                v != _passwordController.text ? 'As senhas não coincidem' : null, label: '',
+            prefixIcon:
+                const Icon(Icons.lock_outline, color: Colors.white),
+            validator: (v) => v != _passwordController.text
+                ? 'As senhas não coincidem'
+                : null,
+            label: '',
           ),
         ],
       ),
