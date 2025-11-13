@@ -21,7 +21,7 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
     final diastolic = <FlSpot>[];
     for (var i = 0; i < last7.length; i++) {
       final r = last7[i];
-      if (r.systolic != null && r.diastolic != null) {
+      if (r.diastolic != null) {
         systolic.add(FlSpot(i.toDouble(), r.systolic!.toDouble()));
         diastolic.add(FlSpot(i.toDouble(), r.diastolic!.toDouble()));
       }

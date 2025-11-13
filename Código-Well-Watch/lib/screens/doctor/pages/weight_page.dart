@@ -22,11 +22,9 @@ class _WeightPageState extends State<WeightPage> {
     final bmi = <double>[];
     for (var i = 0; i < last7.length; i++) {
       final r = last7[i];
-      if (r.weightKg != null) {
-        weight.add(r.weightKg!);
-        bmi.add(double.parse((r.weightKg! / 3.0625).toStringAsFixed(1))); // ~1.75m
-      }
-    }
+      weight.add(r.weightKg!);
+      bmi.add(double.parse((r.weightKg! / 3.0625).toStringAsFixed(1))); // ~1.75m
+        }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Peso')),

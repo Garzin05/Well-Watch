@@ -5,6 +5,7 @@ import 'package:projetowell/services/health_service.dart';
 import 'package:projetowell/models/health_data.dart';
 import 'package:projetowell/screens/main/calendar_base_page.dart';
 import 'package:projetowell/widgets/health_widgets.dart';
+import 'package:projetowell/widgets/health_data_entry_dialog.dart';
 import 'package:intl/intl.dart';
 
 class WeightPage extends StatelessWidget {
@@ -99,13 +100,13 @@ class WeightPage extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Registro de peso adicionado')),
             );
+
+            Navigator.of(context).pop(); // Fecha o diálogo
           }
         },
       ),
     );
   }
-  
-  HealthDataEntryDialog({required String title, required List<Form> formFields, required Null Function() onSave}) {}
 }
 
 class WeightDataDisplay extends StatelessWidget {
@@ -115,9 +116,7 @@ class WeightDataDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     final healthService = Provider.of<HealthService>(context);
     final DateTime today = DateTime.now();
-    final List<WeightRecord> todayRecords = healthService.getWeightForDate(
-      today,
-    );
+    final List<WeightRecord> todayRecords = healthService.getWeightForDate(today);
 
     final allWeightRecords = healthService.weightRecords;
     final List<WeightRecord> recentRecords = allWeightRecords.length > 1

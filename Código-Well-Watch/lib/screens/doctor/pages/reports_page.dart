@@ -28,17 +28,11 @@ class _ReportsPageState extends State<ReportsPage> {
     final bmi = <double>[];
     for (var i = 0; i < last7.length; i++) {
       final r = last7[i];
-      if (r.glucoseMgDl != null) {
-        glucose.add(FlSpot(i.toDouble(), r.glucoseMgDl!.toDouble()));
-      }
-      if (r.systolic != null) {
-        systolic.add(FlSpot(i.toDouble(), r.systolic!.toDouble()));
-      }
-      if (r.weightKg != null) {
-        weight.add(r.weightKg!);
-        bmi.add(double.parse((r.weightKg! / 3.0625).toStringAsFixed(1))); // ~1.75m
-      }
-    }
+      glucose.add(FlSpot(i.toDouble(), r.glucoseMgDl!.toDouble()));
+          systolic.add(FlSpot(i.toDouble(), r.systolic!.toDouble()));
+          weight.add(r.weightKg!);
+      bmi.add(double.parse((r.weightKg! / 3.0625).toStringAsFixed(1))); // ~1.75m
+        }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Relatórios')),

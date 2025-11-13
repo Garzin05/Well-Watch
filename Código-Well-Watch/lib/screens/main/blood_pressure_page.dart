@@ -119,10 +119,8 @@ class BloodPressurePage extends StatelessWidget {
               heartRate = int.tryParse(heartRateController.text);
             }
 
-            final healthService = Provider.of<HealthService>(
-              context,
-              listen: false,
-            );
+            final healthService =
+                Provider.of<HealthService>(context, listen: false);
             healthService.addBloodPressureRecord(
               BloodPressureRecord(
                 date: DateTime.now(),
@@ -143,26 +141,60 @@ class BloodPressurePage extends StatelessWidget {
       ),
     );
   }
-  
-  HealthDataEntryDialog({required String title, required List<Form> formFields, required Null Function() onSave}) {}
 }
 
+/// Dialog real para entrada de dados de saúde
+class HealthDataEntryDialog extends StatelessWidget {
+  final String title;
+  final List<Widget> formFields;
+  final VoidCallback onSave;
+
+  const HealthDataEntryDialog({
+    super.key,
+    required this.title,
+    required this.formFields,
+    required this.onSave,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(title),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: formFields,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            onSave();
+            Navigator.of(context).pop();
+          },
+          child: const Text('Salvar'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Exibição dos registros do dia
 class BloodPressureDataDisplay extends StatelessWidget {
   const BloodPressureDataDisplay({super.key});
 
   @override
   Widget build(BuildContext context) {
     final healthService = Provider.of<HealthService>(context);
-    final DateTime today = DateTime.now();
-    final List<BloodPressureRecord> todayRecords = healthService.getBPForDate(
-      today,
-    );
+    final todayRecords = healthService.getBPForDate(DateTime.now());
 
     Color getBPColor(int systolic, int diastolic) {
       if (systolic >= 140 || diastolic >= 90) return AppColors.bpHigh;
-      if (systolic >= 130 || diastolic >= 85) {
-        return AppColors.bpPre;
-      }
+      if (systolic >= 130 || diastolic >= 85) return AppColors.bpPre;
       if (systolic < 90 || diastolic < 60) return AppColors.bpHigh;
       return AppColors.bpNormal;
     }
@@ -209,7 +241,6 @@ class BloodPressureDataDisplay extends StatelessWidget {
           Column(
             children: todayRecords.map((record) {
               final bpColor = getBPColor(record.systolic, record.diastolic);
-
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(16),
@@ -217,9 +248,9 @@ class BloodPressureDataDisplay extends StatelessWidget {
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                        color: bpColor.withAlpha((0.3 * 255).round()),
-                        width: 2,
-                      ),
+                    color: bpColor.withAlpha((0.3 * 255).round()),
+                    width: 2,
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -297,50 +328,6 @@ class BloodPressureDataDisplay extends StatelessWidget {
               );
             }).toList(),
           ),
-        const SizedBox(height: 20),
-        const Text(
-          'INFORMAÇÕES',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.black54,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Classificação da Pressão Arterial:',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Normal: <120/80 mmHg',
-                style: TextStyle(fontSize: 14, color: AppColors.bpNormal),
-              ),
-              Text(
-                'Pré-hipertensão: 120-139/80-89 mmHg',
-                style: TextStyle(fontSize: 14, color: AppColors.bpPre),
-              ),
-              Text(
-                'Hipertensão: ≥140/90 mmHg',
-                style: TextStyle(fontSize: 14, color: AppColors.bpHigh),
-              ),
-              Text(
-                'Hipotensão: <90/60 mmHg',
-                style: TextStyle(fontSize: 14, color: AppColors.bpHigh),
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }

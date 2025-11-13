@@ -5,6 +5,7 @@ import 'package:projetowell/services/health_service.dart';
 import 'package:projetowell/models/health_data.dart';
 import 'package:projetowell/screens/main/calendar_base_page.dart';
 import 'package:projetowell/widgets/health_widgets.dart';
+import 'package:projetowell/widgets/health_data_entry_dialog.dart'; // ✅ Import correto
 import 'package:intl/intl.dart';
 
 class DiabetesPage extends StatelessWidget {
@@ -66,7 +67,7 @@ class DiabetesPage extends StatelessWidget {
                       return 'Por favor, informe o horário';
                     }
                     final RegExp timeRegex =
-                        RegExp(r'^([01]?[0-9]|2[0-3]):[0-5][0-9]\$');
+                        RegExp(r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$');
                     if (!timeRegex.hasMatch(value)) {
                       return 'Use o formato HH:MM';
                     }
@@ -81,10 +82,8 @@ class DiabetesPage extends StatelessWidget {
         onSave: () {
           if (formKey.currentState!.validate()) {
             final glucoseValue = double.parse(glucoseController.text);
-            final healthService = Provider.of<HealthService>(
-              context,
-              listen: false,
-            );
+            final healthService =
+                Provider.of<HealthService>(context, listen: false);
             healthService.addGlucoseRecord(
               GlucoseRecord(
                 date: DateTime.now(),
@@ -98,13 +97,13 @@ class DiabetesPage extends StatelessWidget {
                 content: Text('Registro de glicose adicionado'),
               ),
             );
+
+            Navigator.of(context).pop(); // Fecha o diálogo
           }
         },
       ),
     );
   }
-  
-  HealthDataEntryDialog({required String title, required List<Form> formFields, required Null Function() onSave}) {}
 }
 
 class DiabetesDataDisplay extends StatelessWidget {
@@ -113,10 +112,7 @@ class DiabetesDataDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final healthService = Provider.of<HealthService>(context);
-    final DateTime today = DateTime.now();
-    final List<GlucoseRecord> todayRecords = healthService.getGlucoseForDate(
-      today,
-    );
+    final todayRecords = healthService.getGlucoseForDate(DateTime.now());
 
     Color getGlucoseColor(double level) {
       if (level < 70) return AppColors.glucoseLow;
@@ -172,8 +168,8 @@ class DiabetesDataDisplay extends StatelessWidget {
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: getGlucoseColor(record.glucoseLevel)
-                        .withAlpha((0.3 * 255).round()),
+                    color:
+                        getGlucoseColor(record.glucoseLevel).withAlpha((0.3 * 255).round()),
                     width: 2,
                   ),
                 ),

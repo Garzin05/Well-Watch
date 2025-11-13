@@ -20,10 +20,8 @@ class _DiabetesPageState extends State<DiabetesPage> {
     final glucose = <FlSpot>[];
     for (var i = 0; i < last7.length; i++) {
       final r = last7[i];
-      if (r.glucoseMgDl != null) {
-        glucose.add(FlSpot(i.toDouble(), r.glucoseMgDl!.toDouble()));
-      }
-    }
+      glucose.add(FlSpot(i.toDouble(), r.glucoseMgDl!.toDouble()));
+        }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Diabetes')),
