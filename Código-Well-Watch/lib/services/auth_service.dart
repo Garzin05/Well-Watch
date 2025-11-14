@@ -13,7 +13,7 @@ class AuthService extends ChangeNotifier {
   }
 
   // =========================================
-  // Carrega dados salvos
+  // Carrega dados salvos localmente
   // =========================================
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
@@ -25,14 +25,24 @@ class AuthService extends ChangeNotifier {
   }
 
   // =========================================
-  // SALVA DADOS LOCALMENTE
+  // Salvar dados no SharedPreferences
   // =========================================
   Future<void> _saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
+
     if (username != null) prefs.setString("username", username!);
     if (email != null) prefs.setString("email", email!);
     if (userId != null) prefs.setString("userId", userId!);
     if (role != null) prefs.setString("role", role!);
+  }
+
+  // =========================================
+  // MÉTODO PÚBLICO PARA SALVAR LOCALMENTE
+  // (Usado no ProfilePage)
+  // =========================================
+  Future<void> saveLocal() async {
+    await _saveToPrefs();
+    notifyListeners();
   }
 
   // =========================================
@@ -81,10 +91,10 @@ class AuthService extends ChangeNotifier {
     role = null;
 
     final prefs = await SharedPreferences.getInstance();
-    prefs.remove("username");
-    prefs.remove("email");
-    prefs.remove("userId");
-    prefs.remove("role");
+    await prefs.remove("username");
+    await prefs.remove("email");
+    await prefs.remove("userId");
+    await prefs.remove("role");
 
     notifyListeners();
   }

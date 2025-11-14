@@ -20,15 +20,11 @@ class AppData extends ChangeNotifier {
   List<String> get patients => ['Paciente 1', 'Paciente 2'];
 
   get appointments => null;
-
   get selectedPatient => null;
-
   get notifications => null;
 
   void addAppointment({required DateTime dateTime, required String patientId, required String note}) {}
-
   void addVital({required patientId, required DateTime date, required int systolic, required int diastolic, required double glucoseMgDl}) {}
-
   void selectPatient(String p) {}
 }
 
@@ -37,14 +33,13 @@ final appData = AppData();
 class DoctorMenuPage extends StatelessWidget {
   const DoctorMenuPage({super.key});
 
-  // Paleta de cores médicas
   static const healthColors = {
-    'primary': Color.fromARGB(255, 2, 31, 48),     // Azul médico principal
-    'accent': Color(0xFF00B8A9),      // Verde água hospitalar
-    'warning': Color(0xFFE94E77),     // Rosa alerta
-    'info': Color(0xFF1BA6B8),        // Azul informação
-    'surface': Color(0xFFF5F9FF),     // Fundo suave
-    'cardLight': Color(0xFFFFFFFF),   // Branco cartões
+    'primary': Color.fromARGB(255, 2, 31, 48),
+    'accent': Color(0xFF00B8A9),
+    'warning': Color(0xFFE94E77),
+    'info': Color(0xFF1BA6B8),
+    'surface': Color(0xFFF5F9FF),
+    'cardLight': Color(0xFFFFFFFF),
   };
 
   @override
@@ -55,8 +50,8 @@ class DoctorMenuPage extends StatelessWidget {
         title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppLogo(size: 32), // Substituindo o ícone pelo logo
-            const SizedBox(height: 8), // Espaçamento entre o logo e o texto
+            AppLogo(size: 32),
+            const SizedBox(height: 8),
             Text(
               'Well Watch',
               style: GoogleFonts.poppins(
@@ -76,33 +71,25 @@ class DoctorMenuPage extends StatelessWidget {
       drawer: _MainDrawer(onNavigate: (route) {
         switch (route) {
           case 'relatorios':
-            Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const ReportsPage()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsPage()));
             break;
           case 'agenda':
-            Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const AgendaPage()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const AgendaPage()));
             break;
           case 'pacientes':
-            Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const PatientsPage()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const PatientsPage()));
             break;
           case 'notificacoes':
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const NotificationsPage()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsPage()));
             break;
           case 'config':
-            Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
             break;
           case 'perfil':
-            Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const ProfilePage()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfilePage()));
             break;
           case 'sair':
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context)
-                .showSnackBar(const SnackBar(content: Text('Sessão encerrada.')));
+            Navigator.pushReplacementNamed(context, '/login');
             break;
         }
       }),
@@ -110,26 +97,15 @@ class DoctorMenuPage extends StatelessWidget {
         backgroundColor: Colors.white,
         selectedIndex: 0,
         onDestinationSelected: (i) {
-          if (i == 1) {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const ReportsPage()));
-          } else if (i == 2) {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const AgendaPage()));
-          } else if (i == 3) {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const PatientsPage()));
-          }
+          if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsPage()));
+          if (i == 2) Navigator.push(context, MaterialPageRoute(builder: (_) => const AgendaPage()));
+          if (i == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => const PatientsPage()));
         },
         destinations: const [
-          NavigationDestination(
-              icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          NavigationDestination(
-              icon: Icon(Icons.bar_chart), label: 'Relatórios'),
-          NavigationDestination(
-              icon: Icon(Icons.calendar_month), label: 'Agenda'),
-          NavigationDestination(
-              icon: Icon(Icons.people), label: 'Pacientes'),
+          NavigationDestination(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          NavigationDestination(icon: Icon(Icons.bar_chart), label: 'Relatórios'),
+          NavigationDestination(icon: Icon(Icons.calendar_month), label: 'Agenda'),
+          NavigationDestination(icon: Icon(Icons.people), label: 'Pacientes'),
         ],
       ),
       body: SafeArea(
@@ -138,7 +114,7 @@ class DoctorMenuPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _HeroHeader(),
+              const _HeroHeader(),
               Transform.translate(
                 offset: const Offset(0, -36),
                 child: Padding(
@@ -185,10 +161,7 @@ class DoctorMenuPage extends StatelessWidget {
                 child: _SearchField(
                   onChanged: (v) {},
                   onSubmitted: (v) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => PatientsPage(initialQuery: v)));
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => PatientsPage(initialQuery: v)));
                   },
                 ),
               ),
@@ -206,33 +179,27 @@ class DoctorMenuPage extends StatelessWidget {
                     RoundedFeatureButton(
                         label: 'Agenda',
                         icon: Icons.calendar_month,
-                        onTap: () => Navigator.push(
-                            context, MaterialPageRoute(builder: (_) => const AgendaPage()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AgendaPage()))),
                     RoundedFeatureButton(
                         label: 'Relatórios',
                         icon: Icons.bar_chart,
-                        onTap: () => Navigator.push(
-                            context, MaterialPageRoute(builder: (_) => const ReportsPage()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsPage()))),
                     RoundedFeatureButton(
                         label: 'Diabetes',
                         icon: Icons.show_chart,
-                        onTap: () => Navigator.push(
-                            context, MaterialPageRoute(builder: (_) => const DiabetesPage()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DiabetesPage()))),
                     RoundedFeatureButton(
                         label: 'Pressão\nArterial',
                         icon: Icons.favorite,
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const BloodPressurePage()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BloodPressurePage()))),
                     RoundedFeatureButton(
                         label: 'Peso',
                         icon: Icons.monitor_weight,
-                        onTap: () => Navigator.push(
-                            context, MaterialPageRoute(builder: (_) => const WeightPage()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WeightPage()))),
                     RoundedFeatureButton(
                         label: 'Pacientes',
                         icon: Icons.people,
-                        onTap: () => Navigator.push(
-                            context, MaterialPageRoute(builder: (_) => const PatientsPage()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PatientsPage()))),
                   ],
                 ),
               ),
@@ -243,12 +210,11 @@ class DoctorMenuPage extends StatelessWidget {
                     style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
-                        color: DoctorMenuPage.healthColors['primary'])),
-              ),
+                        color: DoctorMenuPage.healthColors['primary']))),
               const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: const _WeeklyActivityCard(),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: _WeeklyActivityCard(),
               ),
             ],
           ),
@@ -258,7 +224,55 @@ class DoctorMenuPage extends StatelessWidget {
   }
 }
 
+// --------------------------
+// Drawer
+// --------------------------
+class _MainDrawer extends StatelessWidget {
+  final Function(String) onNavigate;
+  const _MainDrawer({required this.onNavigate});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: DoctorMenuPage.healthColors['primary']),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const CircleAvatar(radius: 30, backgroundColor: Colors.white, child: Icon(Icons.person, size: 40, color: Colors.blue)),
+                const SizedBox(height: 12),
+                Text('Dr. Silva', style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                Text('Cardiologista', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14)),
+              ],
+            ),
+          ),
+          ListTile(leading: const Icon(Icons.bar_chart), title: const Text('Relatórios'), onTap: () { Navigator.pop(context); onNavigate('relatorios'); }),
+          ListTile(leading: const Icon(Icons.calendar_month), title: const Text('Agenda'), onTap: () { Navigator.pop(context); onNavigate('agenda'); }),
+          ListTile(leading: const Icon(Icons.people), title: const Text('Pacientes'), onTap: () { Navigator.pop(context); onNavigate('pacientes'); }),
+          ListTile(leading: const Icon(Icons.notifications), title: const Text('Notificações'), onTap: () { Navigator.pop(context); onNavigate('notificacoes'); }),
+          ListTile(leading: const Icon(Icons.settings), title: const Text('Configurações'), onTap: () { Navigator.pop(context); onNavigate('config'); }),
+          ListTile(leading: const Icon(Icons.person), title: const Text('Perfil'), onTap: () { Navigator.pop(context); onNavigate('perfil'); }),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Sair', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            onTap: () { Navigator.pop(context); onNavigate('sair'); },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// --------------------------
+// Widgets auxiliares
+// --------------------------
 class _HeroHeader extends StatelessWidget {
+  const _HeroHeader();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -273,223 +287,40 @@ class _HeroHeader extends StatelessWidget {
           ],
         ),
       ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: BlobPainter(
-                color: Colors.white.withOpacity(0.1),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Bem-vindo, Dr. Silva',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Monitore seus pacientes e agenda',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 16,
-                  ),
-                ),
-                const Spacer(),
-                Row(
-                  children: [
-                    _HeroChip(
-                      icon: Icons.calendar_today,
-                      label: '${appData.todayAppointmentsCount} consultas hoje',
-                    ),
-                    const SizedBox(width: 12),
-                    _HeroChip(
-                      icon: Icons.warning,
-                      label: '${appData.alertsCount} alertas',
-                      isWarning: true,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Bem-vindo, Dr. Silva', style: GoogleFonts.poppins(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Text('Monitore seus pacientes e agenda', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 16)),
+          ],
+        ),
       ),
     );
   }
 }
 
-class BlobPainter extends CustomPainter {
-  final Color color;
-
-  BlobPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final path = Path()
-      ..moveTo(0, size.height * 0.7)
-      ..quadraticBezierTo(
-        size.width * 0.25,
-        size.height * 0.7,
-        size.width * 0.5,
-        size.height * 0.8,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.75,
-        size.height * 0.9,
-        size.width,
-        size.height * 0.8,
-      )
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
-}
-
-class _HeroChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isWarning;
-
-  const _HeroChip({
-    required this.icon,
-    required this.label,
-    this.isWarning = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: isWarning
-            ? DoctorMenuPage.healthColors['warning']!.withOpacity(0.2)
-            : Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class HealthStatCard extends StatefulWidget {
+class HealthStatCard extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
   final Color color;
-
-  const HealthStatCard({super.key, 
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  State<HealthStatCard> createState() => _HealthStatCardState();
-}
-
-class _HealthStatCardState extends State<HealthStatCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  const HealthStatCard({super.key, required this.icon, required this.label, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => _controller.forward(),
-      onExit: (_) => _controller.reverse(),
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: DoctorMenuPage.healthColors['cardLight'],
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: widget.color.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(widget.icon, color: widget.color, size: 24),
-              const SizedBox(height: 8),
-              Text(
-                widget.value,
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: widget.color,
-                ),
-              ),
-              Text(
-                widget.label,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(value, style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: color)),
+          Text(label, style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]), textAlign: TextAlign.center),
+        ],
       ),
     );
   }
@@ -498,7 +329,6 @@ class _HealthStatCardState extends State<HealthStatCard>
 class _SearchField extends StatelessWidget {
   final Function(String) onChanged;
   final Function(String) onSubmitted;
-
   const _SearchField({required this.onChanged, required this.onSubmitted});
 
   @override
@@ -508,107 +338,39 @@ class _SearchField extends StatelessWidget {
       onSubmitted: onSubmitted,
       decoration: InputDecoration(
         hintText: 'Buscar pacientes...',
-        prefixIcon: Icon(Icons.search, color: Colors.grey),
+        prefixIcon: const Icon(Icons.search, color: Colors.grey),
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
 }
 
-class RoundedFeatureButton extends StatefulWidget {
+class RoundedFeatureButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
-
-  const RoundedFeatureButton({super.key, 
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  State<RoundedFeatureButton> createState() => _RoundedFeatureButtonState();
-}
-
-class _RoundedFeatureButtonState extends State<RoundedFeatureButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  const RoundedFeatureButton({super.key, required this.label, required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final color = DoctorMenuPage.healthColors['primary']!;
-
-    return MouseRegion(
-      onEnter: (_) => _controller.forward(),
-      onExit: (_) => _controller.reverse(),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedBuilder(
-          animation: _scaleAnimation,
-          builder: (context, child) => Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: DoctorMenuPage.healthColors['primary']!.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: DoctorMenuPage.healthColors['primary']),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(widget.icon, color: color),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
+            const SizedBox(height: 8),
+            Text(label, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+          ],
         ),
       ),
     );
@@ -621,34 +383,11 @@ class _WeeklyActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 120,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: List.generate(
-              7,
-              (index) => Expanded(
-                child: _ActivityPill(
-                  day: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'][index],
-                  value: [0.3, 0.5, 0.8, 0.4, 0.6, 0.9, 0.7][index],
-                  color: DoctorMenuPage.healthColors['primary']!,
-                ),
-              ),
-            ),
-          ),
-        ],
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: Row(
+        children: List.generate(7, (index) => Expanded(child: _ActivityPill(day: ['D','S','T','Q','Q','S','S'][index], value: [0.3,0.5,0.8,0.4,0.6,0.9,0.7][index], color: DoctorMenuPage.healthColors['primary']!))),
       ),
     );
   }
@@ -658,103 +397,22 @@ class _ActivityPill extends StatelessWidget {
   final String day;
   final double value;
   final Color color;
-
-  const _ActivityPill({
-    required this.day,
-    required this.value,
-    required this.color,
-  });
+  const _ActivityPill({required this.day, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Column(
-        children: [
-          Container(
-            height: 100,
-            width: 8,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(4),
-            ),
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: 100 * value,
-              width: 8,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            day,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MainDrawer extends StatelessWidget {
-  final Function(String) onNavigate;
-
-  const _MainDrawer({required this.onNavigate});
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: DoctorMenuPage.healthColors['primary'],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 40, color: Colors.blue),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Dr. Silva',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  'Cardiologista',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.bar_chart),
-            title: const Text('Relatórios'),
-            onTap: () {
-              Navigator.pop(context);
-              onNavigate('relatorios');
-            },
-          ),
-          // Outros itens de menu...
-        ],
-      ),
+    return Column(
+      children: [
+        Container(
+          height: 100,
+          width: 8,
+          decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(4)),
+          alignment: Alignment.bottomCenter,
+          child: Container(height: 100 * value, width: 8, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4))),
+        ),
+        const SizedBox(height: 8),
+        Text(day, style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
+      ],
     );
   }
 }
