@@ -3,15 +3,27 @@ import 'package:projetowell/services/auth_service.dart';
 
 void main() {
   group('AuthService', () {
-    final service = AuthService();
+    late AuthService service;
 
-    test('login returns true for admin/123456', () async {
-      final ok = await service.login('admin', '123456');
-      expect(ok, isTrue);
+    setUp(() {
+      service = AuthService();
     });
 
-    test('login returns false for wrong credentials', () async {
-      final ok = await service.login('user', 'wrong');
+    test('login com role correta retorna false (sem API)', () async {
+      final ok = await service.login(
+        'email@fake.com',
+        'senhaqualquer',
+        role: 'patient',
+      );
+      expect(ok, isFalse); // Sem backend → sempre false
+    });
+
+    test('não autentica usuário inexistente', () async {
+      final ok = await service.login(
+        'naoexiste@test.com',
+        'senha',
+        role: 'doctor',
+      );
       expect(ok, isFalse);
     });
   });

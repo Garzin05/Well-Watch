@@ -139,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
     authService.username = _usernameController.text.isNotEmpty
         ? _usernameController.text
         : 'Usuário';
-    authService.setRole(_selectedIsDoctor ? 'doctor' : 'patient');
+      print("Função removida: setRole()");(_selectedIsDoctor ? 'doctor' : 'patient');
 
     if (_selectedIsDoctor) {
       Navigator.pushReplacementNamed(context, AppRoutes.doctorMenu);
@@ -161,7 +161,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
-      await authService.socialLogin(provider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login com $provider bem-sucedido!')),

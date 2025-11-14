@@ -113,15 +113,17 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
       if (response.statusCode == 200 && data["status"] == true) {
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) => RegistrationSuccessScreen(
-              userType: 'patient',
-              userName: _nameController.text.trim(),
-            ),
-          ),
-          (route) => false,
-        );
+  context,
+  MaterialPageRoute(
+    builder: (_) => RegistrationSuccessScreen(
+      userType: 'patient',
+      userName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    ),
+  ),
+  (route) => false,
+);
       } else {
         _showError(data["message"] ?? "Erro ao cadastrar paciente.");
       }

@@ -48,7 +48,9 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
     super.dispose();
   }
 
-  // ✅ função para enviar dados ao backend PHP
+  // ----------------------------------------------------------------------
+  // ENVIAR FORMULÁRIO
+  // ----------------------------------------------------------------------
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -60,7 +62,6 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 🔗 URL da API local (ajuste se for Android Emulator)
       const String apiUrl = "http://localhost/WellWatchAPI/register_doctor.php";
 
       final response = await http.post(
@@ -71,7 +72,7 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
           "email": _emailController.text.trim(),
           "crm": _crmController.text.trim(),
           "phone": _phoneController.text.trim(),
-          "specialty": _specialtyController.text.trim(),
+          "especialidade": _specialtyController.text.trim(),
           "password": _passwordController.text.trim(),
         }),
       );
@@ -80,12 +81,18 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
 
       if (data["status"] == true) {
         if (!mounted) return;
+
+        // ------------------------------------------------------------------
+        // AGORA O AUTO-LOGIN VAI FUNCIONAR PARA MÉDICO!
+        // ------------------------------------------------------------------
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => RegistrationSuccessScreen(
               userType: 'doctor',
               userName: _nameController.text.trim(),
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
             ),
           ),
           (route) => false,
@@ -100,6 +107,9 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
     }
   }
 
+  // ----------------------------------------------------------------------
+  // EXIBIR ERRO
+  // ----------------------------------------------------------------------
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -109,6 +119,9 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
     );
   }
 
+  // ----------------------------------------------------------------------
+  // INTERFACE
+  // ----------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
@@ -151,6 +164,9 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
     );
   }
 
+  // ----------------------------------------------------------------------
+  // CAMPOS DE CADASTRO
+  // ----------------------------------------------------------------------
   Widget _buildDoctorInfoSection() {
     return FadeInUp(
       duration: const Duration(milliseconds: 500),
@@ -161,8 +177,7 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             hintText: 'Digite o nome completo',
             controller: _nameController,
             prefixIcon: const Icon(Icons.person, color: Colors.white),
-            validator: (v) =>
-                v!.isEmpty ? 'Informe o nome completo' : null,
+            validator: (v) => v!.isEmpty ? 'Informe o nome completo' : null,
             label: '',
           ),
           const SizedBox(height: 12),
@@ -225,11 +240,9 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             hintText: 'Confirme sua senha',
             controller: _confirmPasswordController,
             obscureText: true,
-            prefixIcon:
-                const Icon(Icons.lock_outline, color: Colors.white),
-            validator: (v) => v != _passwordController.text
-                ? 'As senhas não coincidem'
-                : null,
+            prefixIcon: const Icon(Icons.lock_outline, color: Colors.white),
+            validator: (v) =>
+                v != _passwordController.text ? 'As senhas não coincidem' : null,
             label: '',
           ),
         ],
