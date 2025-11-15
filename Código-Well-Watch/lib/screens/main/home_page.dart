@@ -53,10 +53,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final authService = Provider.of<AuthService>(context);
     final healthService = Provider.of<HealthService>(context);
     final username = authService.username ?? 'Usuário';
+    final userId = healthService.currentUserId ?? 0;
 
-    final lastGlucose = healthService.glucoseRecords.isNotEmpty ? healthService.glucoseRecords.first : null;
-    final lastBP = healthService.bpRecords.isNotEmpty ? healthService.bpRecords.first : null;
-    final lastWeight = healthService.weightRecords.isNotEmpty ? healthService.weightRecords.first : null;
+    // Pegando os últimos registros do usuário
+    final lastGlucoseList = healthService.getGlucoseForDate(userId, DateTime.now());
+    final lastGlucose = lastGlucoseList.isNotEmpty ? lastGlucoseList.first : null;
+
+    final lastBPList = healthService.getBPForDate(userId, DateTime.now());
+    final lastBP = lastBPList.isNotEmpty ? lastBPList.first : null;
+
+    final lastWeightList = healthService.getWeightForDate(userId, DateTime.now());
+    final lastWeight = lastWeightList.isNotEmpty ? lastWeightList.first : null;
 
     final now = DateTime.now();
     final formattedDate = DateFormat('dd/MM/yyyy').format(now);
@@ -125,7 +132,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             icon: Lottie.asset('assets/lottie/diabetes.json', height: 120, fit: BoxFit.contain),
                             valueColor: _getGlucoseColor(lastGlucose.glucoseLevel),
                             iconColor: _getGlucoseColor(lastGlucose.glucoseLevel),
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DiabetesPage())),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DiabetesPage())),
                           ),
 
                         if (lastBP != null)
@@ -136,7 +143,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             icon: Lottie.asset('assets/lottie/heart.json', height: 120, fit: BoxFit.contain),
                             valueColor: _getBPColor(lastBP.systolic, lastBP.diastolic),
                             iconColor: _getBPColor(lastBP.systolic, lastBP.diastolic),
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BloodPressurePage())),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BloodPressurePage())),
                           ),
 
                         if (lastWeight != null)
@@ -147,7 +154,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             icon: Lottie.asset('assets/lottie/weigth.json', height: 120, fit: BoxFit.contain),
                             valueColor: const Color(0xFF6E8EB1),
                             iconColor: AppColors.weightColor,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const WeightPage())),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WeightPage())),
                           ),
                         const SizedBox(height: 28),
                       ],

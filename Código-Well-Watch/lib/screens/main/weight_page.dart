@@ -7,6 +7,7 @@ import 'package:projetowell/screens/main/calendar_base_page.dart';
 import 'package:projetowell/widgets/health_widgets.dart';
 import 'package:projetowell/widgets/health_data_entry_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:projetowell/services/auth_service.dart';
 
 class WeightPage extends StatelessWidget {
   const WeightPage({super.key});
@@ -26,70 +27,80 @@ class WeightPage extends StatelessWidget {
 
   void _showAddWeightDialog(BuildContext context) {
     final weightController = TextEditingController();
-    final timeController = TextEditingController(
-      text: DateFormat('HH:mm').format(DateTime.now()),
-    );
+    final timeController =
+        TextEditingController(text: DateFormat('HH:mm').format(DateTime.now()));
 
     final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
-      builder: (context) => HealthDataEntryDialog(
-        title: 'Adicionar Registro de Peso',
-        formFields: [
-          Form(
-            key: formKey,
-            child: Column(
-              children: [
-                CustomTextField(
-                  controller: weightController,
-                  label: 'Peso (kg)',
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, informe o peso';
-                    }
-                    value = value.replaceAll(',', '.');
-                    final weight = double.tryParse(value);
-                    if (weight == null || weight <= 0) {
-                      return 'Valor inválido';
-                    }
-                    return null;
-                  },
-                  prefixIcon: Icons.monitor_weight,
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: timeController,
-                  label: 'Horário',
-                  keyboardType: TextInputType.datetime,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, informe o horário';
-                    }
-                    final RegExp timeRegex =
-                        RegExp(r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$');
-                    if (!timeRegex.hasMatch(value)) {
-                      return 'Use o formato HH:MM';
-                    }
-                    return null;
-                  },
-                  prefixIcon: Icons.access_time,
-                ),
-              ],
+      builder: (context) {
+        return HealthDataEntryDialog(
+          title: 'Adicionar Registro de Peso',
+          formFields: [
+            Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  CustomTextField(
+                    controller: weightController,
+                    label: 'Peso (kg)',
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, informe o peso';
+                      }
+                      value = value.replaceAll(',', '.');
+                      final weight = double.tryParse(value);
+                      if (weight == null || weight <= 0) {
+                        return 'Valor inválido';
+                      }
+                      return null;
+                    },
+                    prefixIcon: Icons.monitor_weight,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: timeController,
+                    label: 'Horário',
+                    keyboardType: TextInputType.datetime,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, informe o horário';
+                      }
+                      final RegExp timeRegex =
+                          RegExp(r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$');
+                      if (!timeRegex.hasMatch(value)) {
+                        return 'Use o formato HH:MM';
+                      }
+                      return null;
+                    },
+                    prefixIcon: Icons.access_time,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-        onSave: () {
-          if (formKey.currentState!.validate()) {
-            String normalizedValue = weightController.text.replaceAll(',', '.');
+          ],
+          onSave: () {
+            if (!formKey.currentState!.validate()) return;
+
+            final normalizedValue = weightController.text.replaceAll(',', '.');
             final weight = double.parse(normalizedValue);
-            final healthService = Provider.of<HealthService>(
-              context,
-              listen: false,
-            );
+
+            final auth = Provider.of<AuthService>(context, listen: false);
+            final userId = int.tryParse(auth.userId ?? '') ?? 0;
+
+            if (userId == 0) {
+              Navigator.pop(context);
+              return;
+            }
+
+            final healthService =
+                Provider.of<HealthService>(context, listen: false);
+
             healthService.addWeightRecord(
+              userId,
               WeightRecord(
                 date: DateTime.now(),
                 time: timeController.text,
@@ -101,10 +112,10 @@ class WeightPage extends StatelessWidget {
               const SnackBar(content: Text('Registro de peso adicionado')),
             );
 
-            Navigator.of(context).pop(); // Fecha o diálogo
-          }
-        },
-      ),
+            Navigator.of(context).pop();
+          },
+        );
+      },
     );
   }
 }
@@ -114,12 +125,23 @@ class WeightDataDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthService>(context);
     final healthService = Provider.of<HealthService>(context);
-    final DateTime today = DateTime.now();
-    final List<WeightRecord> todayRecords = healthService.getWeightForDate(today);
 
+    final userId = int.tryParse(auth.userId ?? '') ?? 0;
+    final today = DateTime.now();
+
+    if (userId == 0) {
+      return const Text(
+        "Carregando dados...",
+        style: TextStyle(color: Colors.grey),
+      );
+    }
+
+    final todayRecords = healthService.getWeightForDate(userId, today);
     final allWeightRecords = healthService.weightRecords;
-    final List<WeightRecord> recentRecords = allWeightRecords.length > 1
+
+    final recentRecords = allWeightRecords.length > 5
         ? allWeightRecords.take(5).toList()
         : allWeightRecords;
 
@@ -132,8 +154,9 @@ class WeightDataDisplay extends StatelessWidget {
       weightChange = latestWeight - previousWeight;
 
       final changeAbs = weightChange.abs();
-      final changeSign = weightChange > 0 ? '+' : '';
-      changeText = '$changeSign${changeAbs.toStringAsFixed(1)} kg';
+      final sign = weightChange > 0 ? "+" : "";
+
+      changeText = '$sign${changeAbs.toStringAsFixed(1)} kg';
     }
 
     return Column(
@@ -148,6 +171,7 @@ class WeightDataDisplay extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
+
         if (todayRecords.isEmpty)
           Container(
             width: double.infinity,
@@ -164,13 +188,11 @@ class WeightDataDisplay extends StatelessWidget {
                 Text(
                   'Nenhum registro para hoje',
                   style: TextStyle(color: Colors.grey, fontSize: 16),
-                  textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 4),
                 Text(
                   'Adicione um registro usando o botão abaixo',
                   style: TextStyle(color: Colors.grey, fontSize: 14),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
@@ -185,25 +207,22 @@ class WeightDataDisplay extends StatelessWidget {
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.darkBlueBackground
-                        .withAlpha((0.3 * 255).round()),
+                    color: AppColors.darkBlueBackground.withAlpha(80),
                     width: 2,
                   ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.monitor_weight,
-                      color: AppColors.darkBlueBackground,
-                      size: 24,
-                    ),
+                    const Icon(Icons.monitor_weight,
+                        color: AppColors.darkBlueBackground, size: 24),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 'Peso',
@@ -235,27 +254,23 @@ class WeightDataDisplay extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        color: Colors.red,
-                      ),
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
                       onPressed: () {
-                        Provider.of<HealthService>(
-                          context,
-                          listen: false,
-                        ).removeWeightRecord(record);
+                        healthService.removeWeightRecord(userId, record);
+
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Registro removido'),
                           ),
                         );
                       },
-                    ),
+                    )
                   ],
                 ),
               );
             }).toList(),
           ),
+
         if (recentRecords.length >= 2) ...[
           const SizedBox(height: 20),
           const Text(
@@ -318,8 +333,7 @@ class WeightDataDisplay extends StatelessWidget {
                       '${recentRecords[i].formattedDate}: ${recentRecords[i].formattedWeight}',
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight:
-                            i == 0 ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: i == 0 ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ),

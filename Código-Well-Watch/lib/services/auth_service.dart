@@ -5,7 +5,7 @@ import 'package:projetowell/services/api_service.dart';
 class AuthService extends ChangeNotifier {
   String? username;
   String? email;
-  String? userId;
+  String? userId; // sempre string, usada como int.parse() nas telas
   String? role; // doctor ou patient
 
   AuthService() {
@@ -13,19 +13,21 @@ class AuthService extends ChangeNotifier {
   }
 
   // =========================================
-  // Carrega dados salvos localmente
+  // Carrega dados do SharedPreferences
   // =========================================
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
+
     username = prefs.getString("username");
     email = prefs.getString("email");
     userId = prefs.getString("userId");
     role = prefs.getString("role");
+
     notifyListeners();
   }
 
   // =========================================
-  // Salvar dados no SharedPreferences
+  // Salva dados localmente
   // =========================================
   Future<void> _saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
@@ -36,10 +38,6 @@ class AuthService extends ChangeNotifier {
     if (role != null) prefs.setString("role", role!);
   }
 
-  // =========================================
-  // MÉTODO PÚBLICO PARA SALVAR LOCALMENTE
-  // (Usado no ProfilePage)
-  // =========================================
   Future<void> saveLocal() async {
     await _saveToPrefs();
     notifyListeners();
@@ -65,8 +63,11 @@ class AuthService extends ChangeNotifier {
 
         username = user["name"];
         this.email = user["email"];
+
+        // garante que seja string numérica
         userId = user["id"].toString();
-        this.role = user["role"]; // doctor ou patient
+
+        this.role = user["role"];
 
         await _saveToPrefs();
         notifyListeners();
@@ -104,5 +105,8 @@ class AuthService extends ChangeNotifier {
   // =========================================
   bool get isDoctor => role == "doctor";
   bool get isPatient => role == "patient";
-  bool get isAuthenticated => username != null && email != null;
+
+  // agora verifica userId também
+  bool get isAuthenticated =>
+      username != null && email != null && userId != null;
 }

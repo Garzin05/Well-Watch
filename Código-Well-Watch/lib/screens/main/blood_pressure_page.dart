@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:projetowell/utils/constants.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:projetowell/services/health_service.dart';
 import 'package:projetowell/models/health_data.dart';
 import 'package:projetowell/screens/main/calendar_base_page.dart';
+import 'package:projetowell/services/auth_service.dart';
+import 'package:projetowell/services/health_service.dart';
+import 'package:projetowell/widgets/health_data_entry_dialog.dart';
 import 'package:projetowell/widgets/health_widgets.dart';
-import 'package:intl/intl.dart';
+import 'package:projetowell/utils/constants.dart';
 
 class BloodPressurePage extends StatelessWidget {
   const BloodPressurePage({super.key});
@@ -14,319 +16,205 @@ class BloodPressurePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return CalendarBasePage(
       title: 'Pressão Arterial',
-      dataDisplay: const BloodPressureDataDisplay(),
+      dataDisplay: const BloodPressureDisplay(),
       actionButton: AnimatedActionButton(
-        text: 'Adicionar Registro',
+        text: 'Adicionar Pressão',
         icon: Icons.add,
-        onPressed: () => _showAddBPDialog(context),
+        onPressed: () => _showAddBpDialog(context),
       ),
     );
   }
 
-  void _showAddBPDialog(BuildContext context) {
+  void _showAddBpDialog(BuildContext context) {
     final systolicController = TextEditingController();
     final diastolicController = TextEditingController();
     final heartRateController = TextEditingController();
-    final timeController = TextEditingController(
-      text: DateFormat('HH:mm').format(DateTime.now()),
-    );
+    final timeController =
+        TextEditingController(text: DateFormat('HH:mm').format(DateTime.now()));
 
     final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
-      builder: (context) => HealthDataEntryDialog(
+      builder: (_) => HealthDataEntryDialog(
         title: 'Adicionar Pressão Arterial',
         formFields: [
           Form(
             key: formKey,
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomTextField(
-                        controller: systolicController,
-                        label: 'Sistólica',
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Obrigatório';
-                          }
-                          final systolic = int.tryParse(value);
-                          if (systolic == null || systolic <= 0) {
-                            return 'Inválido';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: CustomTextField(
-                        controller: diastolicController,
-                        label: 'Diastólica',
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Obrigatório';
-                          }
-                          final diastolic = int.tryParse(value);
-                          if (diastolic == null || diastolic <= 0) {
-                            return 'Inválido';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
+                CustomTextField(
+                  controller: systolicController,
+                  label: 'Sistólica (mmHg)',
+                  keyboardType: TextInputType.number,
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Informe a sistólica' : null,
+                  prefixIcon: Icons.favorite,
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: diastolicController,
+                  label: 'Diastólica (mmHg)',
+                  keyboardType: TextInputType.number,
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Informe a diastólica' : null,
+                  prefixIcon: Icons.favorite_border,
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: heartRateController,
-                  label: 'Frequência Cardíaca (bpm)',
-                  hint: 'Opcional',
+                  label: 'Frequência Cardíaca (bpm) — opcional',
                   keyboardType: TextInputType.number,
+                  hint: 'Opcional',
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: timeController,
                   label: 'Horário',
                   keyboardType: TextInputType.datetime,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, informe o horário';
-                    }
-                    final RegExp timeRegex =
+                  validator: (v) {
+                    final regex =
                         RegExp(r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$');
-                    if (!timeRegex.hasMatch(value)) {
-                      return 'Use o formato HH:MM';
-                    }
+                    if (v == null || v.isEmpty) return 'Informe o horário';
+                    if (!regex.hasMatch(v)) return 'Use formato HH:MM';
                     return null;
                   },
                   prefixIcon: Icons.access_time,
                 ),
               ],
             ),
-          ),
+          )
         ],
         onSave: () {
-          if (formKey.currentState!.validate()) {
-            final systolic = int.parse(systolicController.text);
-            final diastolic = int.parse(diastolicController.text);
-            int? heartRate;
-            if (heartRateController.text.isNotEmpty) {
-              heartRate = int.tryParse(heartRateController.text);
-            }
+          if (!formKey.currentState!.validate()) return;
 
-            final healthService =
-                Provider.of<HealthService>(context, listen: false);
-            healthService.addBloodPressureRecord(
-              BloodPressureRecord(
-                date: DateTime.now(),
-                time: timeController.text,
-                systolic: systolic,
-                diastolic: diastolic,
-                heartRate: heartRate,
-              ),
-            );
+          final auth = Provider.of<AuthService>(context, listen: false);
+          final userId = int.tryParse(auth.userId ?? '') ?? 0;
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Registro de pressão arterial adicionado'),
-              ),
-            );
+          if (userId == 0) {
+            Navigator.pop(context);
+            return;
           }
+
+          final healthService =
+              Provider.of<HealthService>(context, listen: false);
+
+          final int? heartRate = heartRateController.text.isNotEmpty
+              ? int.tryParse(heartRateController.text)
+              : null;
+
+          healthService.addBloodPressureRecord(
+            userId,
+            BloodPressureRecord(
+              date: DateTime.now(),
+              time: timeController.text,
+              systolic: int.parse(systolicController.text),
+              diastolic: int.parse(diastolicController.text),
+              heartRate: heartRate,
+            ),
+          );
+
+          Navigator.pop(context);
         },
       ),
     );
   }
 }
 
-/// Dialog real para entrada de dados de saúde
-class HealthDataEntryDialog extends StatelessWidget {
-  final String title;
-  final List<Widget> formFields;
-  final VoidCallback onSave;
-
-  const HealthDataEntryDialog({
-    super.key,
-    required this.title,
-    required this.formFields,
-    required this.onSave,
-  });
+class BloodPressureDisplay extends StatelessWidget {
+  const BloodPressureDisplay({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(title),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: formFields,
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            onSave();
-            Navigator.of(context).pop();
-          },
-          child: const Text('Salvar'),
-        ),
-      ],
-    );
-  }
-}
-
-/// Exibição dos registros do dia
-class BloodPressureDataDisplay extends StatelessWidget {
-  const BloodPressureDataDisplay({super.key});
-
-  @override
-  Widget build(BuildContext context) {
+    final auth = Provider.of<AuthService>(context);
     final healthService = Provider.of<HealthService>(context);
-    final todayRecords = healthService.getBPForDate(DateTime.now());
 
-    Color getBPColor(int systolic, int diastolic) {
-      if (systolic >= 140 || diastolic >= 90) return AppColors.bpHigh;
-      if (systolic >= 130 || diastolic >= 85) return AppColors.bpPre;
-      if (systolic < 90 || diastolic < 60) return AppColors.bpHigh;
-      return AppColors.bpNormal;
+    final userId = int.tryParse(auth.userId ?? '') ?? 0;
+    final today = DateTime.now();
+
+    if (userId == 0) {
+      return const Text(
+        "Carregando dados...",
+        style: TextStyle(color: Colors.grey),
+      );
     }
+
+    final todayRecords = healthService.getBPForDate(userId, today);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'MONITORAMENTO PRESSÃO ARTERIAL',
+          'REGISTROS DE PRESSÃO',
           style: TextStyle(
             fontSize: 12,
             color: Colors.black54,
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
+
         if (todayRecords.isEmpty)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Column(
               children: [
                 Icon(Icons.favorite_border, size: 48, color: Colors.grey),
                 SizedBox(height: 8),
-                Text(
-                  'Nenhum registro para hoje',
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Adicione um registro usando o botão abaixo',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                  textAlign: TextAlign.center,
-                ),
+                Text('Nenhum registro hoje',
+                    style: TextStyle(color: Colors.grey)),
               ],
             ),
           )
         else
           Column(
-            children: todayRecords.map((record) {
-              final bpColor = getBPColor(record.systolic, record.diastolic);
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: bpColor.withAlpha((0.3 * 255).round()),
-                    width: 2,
+            children: todayRecords
+                .map(
+                  (r) => Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.darkBlueBackground.withAlpha(80),
+                        width: 2,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.favorite, color: Colors.red),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '${r.systolic}/${r.diastolic} mmHg - ${r.time}',
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            healthService.removeBloodPressureRecord(
+                                userId, r);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Registro removido'),
+                              ),
+                            );
+                          },
+                          icon:
+                              const Icon(Icons.delete, color: Colors.red),
+                        )
+                      ],
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.favorite, color: bpColor, size: 24),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Pressão Arterial',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey[700],
-                                ),
-                              ),
-                              Text(
-                                record.time,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[700],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Text(
-                                '${record.systolic}/${record.diastolic} mmHg',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: bpColor,
-                                ),
-                              ),
-                              if (record.heartRate != null) ...[
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${record.heartRate} bpm',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: AppColors.bpHigh,
-                      ),
-                      onPressed: () {
-                        Provider.of<HealthService>(
-                          context,
-                          listen: false,
-                        ).removeBloodPressureRecord(record);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Registro removido'),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                )
+                .toList(),
           ),
       ],
     );

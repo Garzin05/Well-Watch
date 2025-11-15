@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var backgroundColor = null;
+    var backgroundColor;
     return CustomScaffold(
       title: 'Login',
       showBackButton: false,

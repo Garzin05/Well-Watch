@@ -1,12 +1,15 @@
 // lib/screens/auth/login_screen.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:projetowell/constansts.dart' hide AppColors;
 import 'package:projetowell/widgets/custom_text_field.dart';
 import 'package:projetowell/widgets/social_login_button.dart';
 import 'package:projetowell/widgets/app_logo.dart';
 import 'package:projetowell/router.dart';
 import 'package:projetowell/widgets/custom_scaffold.dart';
-import 'package:projetowell/services/api_service.dart'; // ✅ Novo import
+import 'package:projetowell/services/api_service.dart';
+import 'package:projetowell/services/auth_service.dart';
+import 'package:projetowell/services/health_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,7 +32,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // ✅ LOGIN com verificação no banco de dados
   Future<void> _handleLogin() async {
     final email = _usernameController.text.trim();
     final password = _passwordController.text.trim();
@@ -43,19 +45,36 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-     final response = await ApiService.login(
-  email: email,
-  password: password,
-  role: role,
-);
+      // Preferimos usar o AuthService (ele já salva no SharedPreferences)
+      final auth = Provider.of<AuthService>(context, listen: false);
+      final logged = await auth.login(email, password, role: role);
 
-      if (response["status"] == true) {
-        // ✅ Sucesso: redireciona de acordo com o tipo
+      if (logged) {
+        // AuthService já salvou username, email, userId, role no SharedPreferences
+        // Agora atualizamos o HealthService com o userId numérico
+        final healthService = Provider.of<HealthService>(context, listen: false);
+
+        // Proteção: se auth.userId for nulo, tentamos buscar no servidor direto (fallback)
+        if (auth.userId != null && auth.userId!.isNotEmpty) {
+          final int userId = int.tryParse(auth.userId!) ?? 0;
+          healthService.currentUserId = userId;
+        } else {
+          // fallback: chamar ApiService.login direto para obter id (raro)
+          final response = await ApiService.login(email: email, password: password, role: role);
+          if (response["status"] == true && response["user"]?["id"] != null) {
+            final userId = response["user"]["id"];
+            healthService.currentUserId = userId is int ? userId : int.tryParse(userId.toString()) ?? 0;
+            // opcional: atualizar auth.userId também
+            auth.userId = healthService.currentUserId?.toString();
+            await auth.saveLocal();
+          }
+        }
+
+        // notifica para garantir que listeners atualizem
+        healthService.notifyListeners();
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Login realizado com sucesso!"),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text("Login realizado com sucesso!"), backgroundColor: Colors.green),
         );
 
         if (role == 'doctor') {
@@ -64,10 +83,10 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacementNamed(context, AppRoutes.home);
         }
       } else {
-        // ❌ Erro (senha incorreta, usuário não encontrado etc.)
-        _showError(response["message"] ?? "E-mail ou senha incorretos.");
+        _showError("E-mail ou senha incorretos.");
       }
     } catch (e) {
+      debugPrint('Erro no _handleLogin: $e');
       _showError("Erro ao conectar com o servidor.");
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -76,14 +95,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
     );
   }
 
-  // (Social login mantido como placeholder)
   void _handleSocialLogin(String provider) async {
     _showError("Login com $provider ainda não implementado.");
   }

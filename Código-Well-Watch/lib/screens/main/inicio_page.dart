@@ -53,16 +53,21 @@ class InicioPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHealthSummaryCard(HealthService healthService) {
-    final lastGlucose = healthService.glucoseRecords.isNotEmpty
-        ? healthService.glucoseRecords.first
-        : null;
-    final lastBP = healthService.bpRecords.isNotEmpty
-        ? healthService.bpRecords.first
-        : null;
-    final lastWeight = healthService.weightRecords.isNotEmpty
-        ? healthService.weightRecords.first
-        : null;
+  // =======================================================
+  // RESUMO DE SAÚDE — CORRIGIDO 
+  // =======================================================
+  Widget _buildHealthSummaryCard(
+      BuildContext context, HealthService healthService) {
+    final auth = Provider.of<AuthService>(context, listen: false);
+    final userId = int.tryParse(auth.userId ?? '0') ?? 0;
+
+    final glucoseList = healthService.getGlucoseForDate(userId, DateTime.now());
+    final bpList = healthService.getBPForDate(userId, DateTime.now());
+    final weightList = healthService.getWeightForDate(userId, DateTime.now());
+
+    final lastGlucose = glucoseList.isNotEmpty ? glucoseList.first : null;
+    final lastBP = bpList.isNotEmpty ? bpList.first : null;
+    final lastWeight = weightList.isNotEmpty ? weightList.first : null;
 
     return Card(
       elevation: 2,
@@ -79,6 +84,7 @@ class InicioPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+
             if (lastGlucose != null)
               _buildHealthMetric(
                 'Glicose',
@@ -86,6 +92,7 @@ class InicioPage extends StatelessWidget {
                 Icons.bloodtype,
                 Colors.red,
               ),
+
             if (lastBP != null)
               _buildHealthMetric(
                 'Pressão Arterial',
@@ -93,6 +100,7 @@ class InicioPage extends StatelessWidget {
                 Icons.favorite,
                 Colors.red,
               ),
+
             if (lastWeight != null)
               _buildHealthMetric(
                 'Peso',
@@ -100,6 +108,7 @@ class InicioPage extends StatelessWidget {
                 Icons.monitor_weight,
                 AppColors.weightColor,
               ),
+
             if (lastGlucose == null && lastBP == null && lastWeight == null)
               const Text(
                 'Nenhuma medição registrada hoje',
@@ -263,7 +272,7 @@ class InicioPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!isDoctor) _buildHealthSummaryCard(healthService),
+                  if (!isDoctor) _buildHealthSummaryCard(context, healthService),
                   const SizedBox(height: 24),
                   const Text(
                     'Acesso Rápido',
