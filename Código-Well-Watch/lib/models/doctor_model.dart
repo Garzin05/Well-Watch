@@ -1,6 +1,6 @@
 class Doctor {
   final String id;
-  final String name;
+  final String name; // campo que vai pegar o nome do médico
   final String email;
   final String phone;
   final String specialty;
@@ -42,7 +42,7 @@ class Doctor {
     this.isAvailable = true,
     this.rating = 0.0,
     this.totalPatients = 0,
-    this.totalAppointments = 0, required String password,
+    this.totalAppointments = 0,
   });
 
   Map<String, dynamic> toJson() {
@@ -73,29 +73,29 @@ class Doctor {
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
     return Doctor(
-      id: json['id'] as String,
-      name: json['name'] as String,
+      id: json['id'].toString(),
+      name: json['name'] ?? json['nome'] ?? 'Usuário', // garante pegar o nome real
       email: json['email'] as String,
       phone: json['phone'] as String,
       specialty: json['specialty'] as String,
       crm: json['crm'] as String,
       clinicAddress: json['clinicAddress'] as String,
       createdAt: json['createdAt'] as String,
-      yearsOfExperience: json['yearsOfExperience'] as int,
+      yearsOfExperience: (json['yearsOfExperience'] as num).toInt(),
       hospital: json['hospital'] as String,
       education: json['education'] as String,
       specialization: json['specialization'] as String,
       gender: json['gender'] as String,
-      skills: List<String>.from(json['skills'] as List),
+      skills: List<String>.from(json['skills'] as List? ?? []),
       about: json['about'] as String,
       profileImage: json['profileImage'] as String? ?? '',
-      workingHours: (json['workingHours'] as List)
+      workingHours: (json['workingHours'] as List? ?? [])
           .map((wh) => WorkingHours.fromJson(wh as Map<String, dynamic>))
           .toList(),
       isAvailable: json['isAvailable'] as bool? ?? true,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       totalPatients: json['totalPatients'] as int? ?? 0,
-      totalAppointments: json['totalAppointments'] as int? ?? 0, password: '',
+      totalAppointments: json['totalAppointments'] as int? ?? 0,
     );
   }
 }

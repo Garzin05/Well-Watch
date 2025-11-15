@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:projetowell/services/auth_service.dart';
+import 'package:projetowell/services/health_service.dart';
 import 'package:projetowell/models/app_data.dart';
 
 class PatientsPage extends StatefulWidget {
@@ -11,18 +14,39 @@ class PatientsPage extends StatefulWidget {
 
 class _PatientsPageState extends State<PatientsPage> {
   String _query = '';
+  List<Patient> _patients = [];
 
   @override
   void initState() {
     super.initState();
     _query = widget.initialQuery ?? '';
+    _loadPatients();
+  }
+
+  /// Carrega apenas pacientes do médico logado
+  void _loadPatients() {
+    final auth = Provider.of<AuthService>(context, listen: false);
+    final health = Provider.of<HealthService>(context, listen: false);
+
+    // Filtra pacientes do médico
+    void _loadPatients() {
+  _patients = List.from(appData.patients); // pega todos os pacientes
+  _patients.sort((a, b) => a.name.compareTo(b.name));
+  setState(() {});
+}
+
+    // Se quiser ordenar por nome:
+    _patients.sort((a, b) => a.name.compareTo(b.name));
+
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final filtered = appData.patients
+    final filtered = _patients
         .where((p) => p.name.toLowerCase().contains(_query.toLowerCase()))
         .toList();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Pacientes')),
       body: Column(
@@ -82,7 +106,7 @@ class _PatientsPageState extends State<PatientsPage> {
     final last = p.latestRecord();
     if (last == null) return 'Sem dados';
     final d = last.date;
-  String two(int n) => n.toString().padLeft(2, '0');
+    String two(int n) => n.toString().padLeft(2, '0');
     final when = '${two(d.day)}/${two(d.month)}/${d.year}';
     final g = last.glucoseMgDl != null ? '${last.glucoseMgDl!.toStringAsFixed(0)} mg/dL' : '-';
     final pr = (last.systolic != null && last.diastolic != null) ? '${last.systolic}/${last.diastolic}' : '-';
@@ -92,7 +116,6 @@ class _PatientsPageState extends State<PatientsPage> {
 
   void _openReports(Patient p) async {
     appData.selectPatient(p);
-    // Lazy import to avoid circular deps
     await Navigator.pushNamed(context, '/reports');
     if (!mounted) return;
     setState(() {});
@@ -100,7 +123,6 @@ class _PatientsPageState extends State<PatientsPage> {
 
   void _contactPatient(Patient p) {
     final controller = TextEditingController();
-    // ignore: use_build_context_synchronously
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -111,7 +133,7 @@ class _PatientsPageState extends State<PatientsPage> {
         return Padding(
           padding: EdgeInsets.only(bottom: bottom),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,7 +180,7 @@ class _PatientsPageState extends State<PatientsPage> {
         return Padding(
           padding: EdgeInsets.only(bottom: bottom),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,7 +205,6 @@ class _PatientsPageState extends State<PatientsPage> {
                   IconButton(
                     tooltip: 'Escolher data e hora',
                     onPressed: () async {
-                      // ignore: use_build_context_synchronously
                       final picked = await showDatePicker(
                         context: context,
                         firstDate: DateTime.now().subtract(const Duration(days: 365)),
@@ -191,7 +212,6 @@ class _PatientsPageState extends State<PatientsPage> {
                         initialDate: when,
                       );
                       if (picked != null) {
-                        // ignore: use_build_context_synchronously
                         final t = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(when));
                         if (t != null) {
                           when = DateTime(picked.year, picked.month, picked.day, t.hour, t.minute);
@@ -239,7 +259,7 @@ class _PatientsPageState extends State<PatientsPage> {
   }
 
   String _formatDate(DateTime dt) {
-  String two(int n) => n.toString().padLeft(2, '0');
+    String two(int n) => n.toString().padLeft(2, '0');
     return '${two(dt.day)}/${two(dt.month)}/${dt.year} ${two(dt.hour)}:${two(dt.minute)}';
   }
 }

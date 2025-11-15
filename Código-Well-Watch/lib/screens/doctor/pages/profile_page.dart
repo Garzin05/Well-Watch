@@ -32,6 +32,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadDoctorProfile();
   }
 
+  /// Carrega perfil do médico a partir do backend
   Future<void> _loadDoctorProfile() async {
     final auth = Provider.of<AuthService>(context, listen: false);
     final userId = auth.userId;
@@ -41,7 +42,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
-    const url = "http://localhost/WellWatchAPI/get_patient_profile.php";
+    const url = "http://localhost/WellWatchAPI/get_doctor_profile.php";
 
     try {
       final res = await http.post(
@@ -63,6 +64,12 @@ class _ProfilePageState extends State<ProfilePage> {
         _hospital.text = d["hospital_afiliado"] ?? "";
         _phone.text = d["telefone"] ?? "";
         _specialty.text = d["especialidade"] ?? "";
+
+        // Atualiza AuthService para refletir o nome real do médico
+        auth.username = d["name"] ?? auth.username;
+        await auth.saveLocal();
+      } else {
+        debugPrint("Erro ao carregar perfil: ${data["message"]}");
       }
     } catch (e) {
       debugPrint("Erro ao carregar perfil: $e");
@@ -71,6 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => _loading = false);
   }
 
+  /// Salva alterações do perfil no backend
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -100,7 +108,7 @@ class _ProfilePageState extends State<ProfilePage> {
       final data = jsonDecode(res.body);
 
       if (data["status"] == true) {
-        // Atualizar AuthService
+        // Atualiza AuthService
         auth.username = _name.text.trim();
         await auth.saveLocal();
 
@@ -126,11 +134,11 @@ class _ProfilePageState extends State<ProfilePage> {
     Navigator.pushNamedAndRemoveUntil(context, "/login", (_) => false);
   }
 
-  Widget _field(String label, TextEditingController c) {
+  Widget _field(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
-        controller: c,
+        controller: controller,
         decoration: InputDecoration(labelText: label),
         validator: (v) => v!.isEmpty ? "Obrigatório" : null,
       ),
@@ -154,15 +162,10 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             children: [
               Center(
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Colors.blue.shade100,
-                      child: const Icon(Icons.person, size: 40),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.blue.shade100,
+                  child: const Icon(Icons.person, size: 40),
                 ),
               ),
               const SizedBox(height: 20),

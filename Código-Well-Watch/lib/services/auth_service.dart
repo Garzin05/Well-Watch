@@ -61,7 +61,7 @@ class AuthService extends ChangeNotifier {
       if (result["status"] == true) {
         final user = result["user"];
 
-        username = user["name"];
+        username = user["name"] ?? user["nome"] ?? 'Usuário';
         this.email = user["email"];
 
         // garante que seja string numérica
