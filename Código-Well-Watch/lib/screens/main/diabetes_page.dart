@@ -171,7 +171,10 @@ class DiabetesDisplay extends StatelessWidget {
                           child: Text(
                             '${r.glucoseLevel.toStringAsFixed(0)} mg/dL - ${r.time}',
                             style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.darkBlueBackground, // <-- COR DO TEXTO ALTERADA
+                            ),
                           ),
                         ),
                         IconButton(

@@ -264,8 +264,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     addItem('Atividade Física', 'assets/lottie/activity.json', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivityPage())));
     addItem('Alimentação', 'assets/lottie/nutrition.json', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AlimentacaoPage())));
 
-    addItem(isDoctor ? 'Relatórios Médicos' : 'Ver Relatórios', 'assets/lottie/doctor.json',
-        () => Navigator.pushNamed(context, AppRoutes.reports));
+
 
     return GridView.count(
       crossAxisCount: 2,
@@ -327,7 +326,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(0, 'assets/lottie/monitoring.json', 'Monitoramento'),
-          if (isDoctor) _buildNavItem(1, 'assets/lottie/doctor.json', 'Relatórios'),
         ],
       ),
     );
@@ -338,11 +336,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     return GestureDetector(
       onTap: () {
         setState(() => _selectedIndex = index);
-        if (label.toLowerCase().contains('relat')) {
-          Navigator.pushNamed(context, AppRoutes.reports);
-        } else {
-          Navigator.pushNamed(context, AppRoutes.inicio);
-        }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,

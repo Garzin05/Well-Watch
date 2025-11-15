@@ -194,7 +194,10 @@ class BloodPressureDisplay extends StatelessWidget {
                           child: Text(
                             '${r.systolic}/${r.diastolic} mmHg - ${r.time}',
                             style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.darkBlueBackground, // <-- COR ALTERADA
+                            ),
                           ),
                         ),
                         IconButton(
@@ -207,8 +210,7 @@ class BloodPressureDisplay extends StatelessWidget {
                               ),
                             );
                           },
-                          icon:
-                              const Icon(Icons.delete, color: Colors.red),
+                          icon: const Icon(Icons.delete, color: Colors.red),
                         )
                       ],
                     ),
