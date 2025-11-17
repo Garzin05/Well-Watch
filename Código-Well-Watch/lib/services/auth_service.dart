@@ -110,20 +110,23 @@ class AuthService extends ChangeNotifier {
       if (result["status"] == true) {
         final user = result["user"];
 
+        // Campos comuns
         username = user["name"] ?? user["nome"] ?? 'Usuário';
         this.email = user["email"];
         userId = user["id"].toString();
         this.role = user["role"];
 
+        // Campos médicos
         if (role == 'doctor') {
-          crm = user["crm"];
-          phone = user["phone"];
-          specialty = user["specialty"];
-          hospital = user["hospital_afiliado"];
+          crm = user["crm"]?.toString() ?? '';
+          phone = user["telefone"]?.toString() ?? '';
+          specialty = user["especialidade"] ?? ''; // <- correção importante
+          hospital = user["hospital_afiliado"] ?? '';
         }
 
+        // Campos pacientes
         if (role == 'patient') {
-          phone = user["phone"];
+          phone = user["telefone"]?.toString() ?? '';
           age = user["age"];
           gender = user["gender"];
           address = user["address"];

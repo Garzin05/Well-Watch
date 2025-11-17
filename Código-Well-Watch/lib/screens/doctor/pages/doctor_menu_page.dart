@@ -15,6 +15,7 @@ import 'diabetes_page.dart';
 import 'blood_pressure_page.dart';
 import 'weight_page.dart';
 
+// Mock de dados (para estatísticas, pode substituir por backend real)
 class AppData extends ChangeNotifier {
   int get alertsCount => 3;
   int get todayAppointmentsCount => 5;
@@ -37,7 +38,7 @@ class DoctorMenuPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthService>(context);
+    final auth = Provider.of<AuthService>(context); // pega usuário logado
     final doctorName = auth.username ?? 'Médico';
     final specialty = auth.specialty ?? '';
 
@@ -52,7 +53,9 @@ class DoctorMenuPage extends StatelessWidget {
             Text(
               'Well Watch',
               style: GoogleFonts.poppins(
-                  color: Colors.white, fontWeight: FontWeight.w700, fontSize: 20),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20),
             ),
           ],
         ),
@@ -66,25 +69,33 @@ class DoctorMenuPage extends StatelessWidget {
         backgroundColor: healthColors['primary'],
       ),
       drawer: _MainDrawer(
+        doctorName: doctorName,
+        specialty: specialty,
         onNavigate: (route) {
           switch (route) {
             case 'relatorios':
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsPage()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ReportsPage()));
               break;
             case 'agenda':
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AgendaPage()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AgendaPage()));
               break;
             case 'pacientes':
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const PatientsPage()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const PatientsPage()));
               break;
             case 'notificacoes':
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsPage()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const NotificationsPage()));
               break;
             case 'config':
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SettingsPage()));
               break;
             case 'perfil':
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfilePage()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ProfilePage()));
               break;
             case 'sair':
               auth.signOut();
@@ -92,8 +103,6 @@ class DoctorMenuPage extends StatelessWidget {
               break;
           }
         },
-        doctorName: doctorName,
-        specialty: specialty,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -102,6 +111,48 @@ class DoctorMenuPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _HeroHeader(doctorName: doctorName, specialty: specialty),
+              const SizedBox(height: 16),
+              Transform.translate(
+                offset: const Offset(0, -36),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: AnimatedBuilder(
+                    animation: appData,
+                    builder: (context, _) {
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: HealthStatCard(
+                              icon: Icons.people,
+                              label: 'Pacientes',
+                              value: appData.patients.length.toString(),
+                              color: const Color(0xFF1BA6B8),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: HealthStatCard(
+                              icon: Icons.warning,
+                              label: 'Alertas',
+                              value: appData.alertsCount.toString(),
+                              color: const Color(0xFFE94E77),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: HealthStatCard(
+                              icon: Icons.calendar_today,
+                              label: 'Hoje',
+                              value: appData.todayAppointmentsCount.toString(),
+                              color: const Color(0xFF00B8A9),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -114,35 +165,35 @@ class DoctorMenuPage extends StatelessWidget {
                   shrinkWrap: true,
                   children: [
                     RoundedFeatureButton(
-                      label: 'Agenda',
-                      icon: Icons.calendar_month,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AgendaPage())),
-                    ),
+                        label: 'Agenda',
+                        icon: Icons.calendar_month,
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const AgendaPage()))),
                     RoundedFeatureButton(
-                      label: 'Relatórios',
-                      icon: Icons.bar_chart,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsPage())),
-                    ),
+                        label: 'Relatórios',
+                        icon: Icons.bar_chart,
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const ReportsPage()))),
                     RoundedFeatureButton(
-                      label: 'Diabetes',
-                      icon: Icons.show_chart,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DiabetesPage())),
-                    ),
+                        label: 'Diabetes',
+                        icon: Icons.show_chart,
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const DiabetesPage()))),
                     RoundedFeatureButton(
-                      label: 'Pressão\nArterial',
-                      icon: Icons.favorite,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BloodPressurePage())),
-                    ),
+                        label: 'Pressão\nArterial',
+                        icon: Icons.favorite,
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const BloodPressurePage()))),
                     RoundedFeatureButton(
-                      label: 'Peso',
-                      icon: Icons.monitor_weight,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WeightPage())),
-                    ),
+                        label: 'Peso',
+                        icon: Icons.monitor_weight,
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const WeightPage()))),
                     RoundedFeatureButton(
-                      label: 'Pacientes',
-                      icon: Icons.people,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PatientsPage())),
-                    ),
+                        label: 'Pacientes',
+                        icon: Icons.people,
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const PatientsPage()))),
                   ],
                 ),
               ),
@@ -162,11 +213,10 @@ class _MainDrawer extends StatelessWidget {
   final String doctorName;
   final String specialty;
 
-  const _MainDrawer({
-    required this.onNavigate,
-    required this.doctorName,
-    required this.specialty,
-  });
+  const _MainDrawer(
+      {required this.onNavigate,
+      required this.doctorName,
+      required this.specialty});
 
   @override
   Widget build(BuildContext context) {
@@ -175,32 +225,80 @@ class _MainDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(color: DoctorMenuPage.healthColors['primary']),
+            decoration:
+                BoxDecoration(color: DoctorMenuPage.healthColors['primary']),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 40, color: Colors.blue),
-                ),
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person,
+                        size: 40, color: Colors.blue)),
                 const SizedBox(height: 12),
-                Text(doctorName, style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
-                Text(specialty, style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14)),
+                Text(doctorName,
+                    style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600)),
+                Text(specialty,
+                    style: GoogleFonts.poppins(
+                        color: Colors.white70, fontSize: 14)),
               ],
             ),
           ),
-          ListTile(leading: const Icon(Icons.bar_chart), title: const Text('Relatórios'), onTap: () { Navigator.pop(context); onNavigate('relatorios'); }),
-          ListTile(leading: const Icon(Icons.calendar_month), title: const Text('Agenda'), onTap: () { Navigator.pop(context); onNavigate('agenda'); }),
-          ListTile(leading: const Icon(Icons.people), title: const Text('Pacientes'), onTap: () { Navigator.pop(context); onNavigate('pacientes'); }),
-          ListTile(leading: const Icon(Icons.notifications), title: const Text('Notificações'), onTap: () { Navigator.pop(context); onNavigate('notificacoes'); }),
-          ListTile(leading: const Icon(Icons.settings), title: const Text('Configurações'), onTap: () { Navigator.pop(context); onNavigate('config'); }),
-          ListTile(leading: const Icon(Icons.person), title: const Text('Perfil'), onTap: () { Navigator.pop(context); onNavigate('perfil'); }),
+          ListTile(
+              leading: const Icon(Icons.bar_chart),
+              title: const Text('Relatórios'),
+              onTap: () {
+                Navigator.pop(context);
+                onNavigate('relatorios');
+              }),
+          ListTile(
+              leading: const Icon(Icons.calendar_month),
+              title: const Text('Agenda'),
+              onTap: () {
+                Navigator.pop(context);
+                onNavigate('agenda');
+              }),
+          ListTile(
+              leading: const Icon(Icons.people),
+              title: const Text('Pacientes'),
+              onTap: () {
+                Navigator.pop(context);
+                onNavigate('pacientes');
+              }),
+          ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text('Notificações'),
+              onTap: () {
+                Navigator.pop(context);
+                onNavigate('notificacoes');
+              }),
+          ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Configurações'),
+              onTap: () {
+                Navigator.pop(context);
+                onNavigate('config');
+              }),
+          ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Perfil'),
+              onTap: () {
+                Navigator.pop(context);
+                onNavigate('perfil');
+              }),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Sair', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-            onTap: () { Navigator.pop(context); onNavigate('sair'); },
+            title: const Text('Sair',
+                style: TextStyle(
+                    color: Colors.red, fontWeight: FontWeight.bold)),
+            onTap: () {
+              Navigator.pop(context);
+              onNavigate('sair');
+            },
           ),
         ],
       ),
@@ -236,9 +334,15 @@ class _HeroHeader extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Bem-vindo, $doctorName', style: GoogleFonts.poppins(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600)),
+            Text('Bem-vindo, $doctorName',
+                style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            Text('Especialidade: $specialty', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 16)),
+            Text('Especialidade: ${specialty.isNotEmpty ? specialty : "Não informada"}',
+                style: GoogleFonts.poppins(
+                    color: Colors.white70, fontSize: 16)),
           ],
         ),
       ),
@@ -247,34 +351,75 @@ class _HeroHeader extends StatelessWidget {
 }
 
 // --------------------------
-// Botão de recurso arredondado
+// Estatísticas
+// --------------------------
+class HealthStatCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const HealthStatCard(
+      {super.key,
+      required this.icon,
+      required this.label,
+      required this.value,
+      required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration:
+          BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(value,
+              style: GoogleFonts.poppins(
+                  fontSize: 20, fontWeight: FontWeight.w600, color: color)),
+          Text(label,
+              style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+              textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+}
+
+// --------------------------
+// Botões do menu
 // --------------------------
 class RoundedFeatureButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
 
-  const RoundedFeatureButton({super.key, required this.label, required this.icon, required this.onTap});
+  const RoundedFeatureButton(
+      {super.key, required this.label, required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        decoration:
+            BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: DoctorMenuPage.healthColors['primary']!.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
+                  color: DoctorMenuPage.healthColors['primary']!.withOpacity(0.1),
+                  shape: BoxShape.circle),
               child: Icon(icon, color: DoctorMenuPage.healthColors['primary']),
             ),
             const SizedBox(height: 8),
-            Text(label, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+            Text(label,
+                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center),
           ],
         ),
       ),
