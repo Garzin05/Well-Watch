@@ -1,10 +1,9 @@
-import 'dart:math';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 
-// Definições de dados vitais do paciente
 class VitalRecord {
   final DateTime date;
-  final double? glucoseMgDl; // mg/dL
+  final double? glucoseMgDl;
   final int? systolic;
   final int? diastolic;
   final double? weightKg;
@@ -16,58 +15,105 @@ class VitalRecord {
     this.diastolic,
     this.weightKg,
   });
+
+  factory VitalRecord.fromJson(Map<String, dynamic> j) {
+    return VitalRecord(
+      date: DateTime.parse(j['date']),
+      glucoseMgDl: j['glucoseMgDl'] != null ? (j['glucoseMgDl'] as num).toDouble() : null,
+      systolic: j['systolic'] as int?,
+      diastolic: j['diastolic'] as int?,
+      weightKg: j['weightKg'] != null ? (j['weightKg'] as num).toDouble() : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'date': date.toIso8601String(),
+        'glucoseMgDl': glucoseMgDl,
+        'systolic': systolic,
+        'diastolic': diastolic,
+        'weightKg': weightKg,
+      };
 }
 
-// Classe de paciente com os registros vitais
 class Patient {
   final String id;
   final String name;
-  final String initials;
   final List<VitalRecord> records;
+  late final String initials;
 
   Patient({
     required this.id,
     required this.name,
     required this.records,
-  }) : initials = name.isNotEmpty
-            ? name.trim().split(RegExp(r"\s+")).map((e) => e[0]).take(2).join()
-            : '?';
-
-  bool get hasAlert {
-    // Verifica se o paciente possui algum alerta baseado nos registros vitais
-    for (final r in records) {
-      if ((r.glucoseMgDl ?? 0) >= 180) return true;
-      if ((r.systolic ?? 0) >= 140 || (r.diastolic ?? 0) >= 90) return true;
-    }
-    return false;
+  }) {
+    initials = name.isNotEmpty
+        ? name.trim().split(RegExp(r"\s+")).map((e) => e[0]).take(2).join()
+        : '?';
   }
 
+  factory Patient.fromJson(Map<String, dynamic> j) {
+    final recs = <VitalRecord>[];
+    if (j['records'] is List) {
+      for (final r in j['records']) {
+        if (r is Map<String, dynamic>) recs.add(VitalRecord.fromJson(r));
+      }
+    }
+    return Patient(
+      id: j['id'].toString(),
+      name: j['name'] ?? '',
+      records: recs,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'records': records.map((r) => r.toJson()).toList(),
+      };
+
   VitalRecord? latestRecord() {
-    // Retorna o último registro vital
     if (records.isEmpty) return null;
     final sorted = [...records]..sort((a, b) => b.date.compareTo(a.date));
     return sorted.first;
   }
 }
 
-// Classe de agendamento de consultas
 class Appointment {
   final DateTime dateTime;
   final String patientId;
   final String note;
+
   Appointment({required this.dateTime, required this.patientId, required this.note});
+
+  factory Appointment.fromJson(Map<String, dynamic> j) => Appointment(
+        dateTime: DateTime.parse(j['dateTime']),
+        patientId: j['patientId'].toString(),
+        note: j['note'] ?? '',
+      );
+
+  Map<String, dynamic> toJson() => {
+        'dateTime': dateTime.toIso8601String(),
+        'patientId': patientId,
+        'note': note,
+      };
 }
 
-// Classe de Notificação (Alertas, lembretes, etc)
 class NotificationItem {
   final String title;
   final String subtitle;
-  final IconData icon;
-  final Color color;
-  NotificationItem(this.title, this.subtitle, this.icon, this.color);
+  final String icon; // string identifier — evita dependência direta
+  final int colorValue;
+
+  NotificationItem(this.title, this.subtitle, this.icon, this.colorValue);
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'subtitle': subtitle,
+        'icon': icon,
+        'colorValue': colorValue,
+      };
 }
 
-// Classe AppData gerencia o estado de pacientes, consultas e notificações
 class AppData extends ChangeNotifier {
   final List<Patient> patients = [];
   final List<Appointment> appointments = [];
@@ -75,81 +121,54 @@ class AppData extends ChangeNotifier {
 
   Patient? selectedPatient;
 
-  AppData() {
-    _seed();
-  }
+  // NÃO chama _seed() no construtor — dados serão populados pela API
+  AppData();
 
-  void _seed() {
-    final now = DateTime.now();
-    
-    // Função que gera séries de registros vitais de forma aleatória
-    List<VitalRecord> genSeries({double gBase = 100, int sBase = 120, int dBase = 80, double wBase = 80}) {
-      final rnd = Random(42);
-      return List.generate(7, (i) {
-        final day = now.subtract(Duration(days: 6 - i));
-        return VitalRecord(
-          date: day,
-          glucoseMgDl: (gBase + rnd.nextInt(40) - 20).toDouble(),
-          systolic: sBase + rnd.nextInt(20) - 10,
-          diastolic: dBase + rnd.nextInt(12) - 6,
-          weightKg: double.parse((wBase - i * 0.2 + rnd.nextDouble() * 0.2).toStringAsFixed(1)),
-        );
-      });
-    }
-
-    // Inicializa os pacientes com dados gerados
-    patients.addAll([
-      Patient(id: 'p1', name: 'João Silva', records: genSeries(gBase: 110, sBase: 125, dBase: 82, wBase: 79.5)),
-      Patient(id: 'p2', name: 'Maria Souza', records: genSeries(gBase: 95, sBase: 118, dBase: 76, wBase: 68.2)),
-      Patient(id: 'p3', name: 'Carlos Almeida', records: genSeries(gBase: 130, sBase: 138, dBase: 88, wBase: 85.0)),
-      Patient(id: 'p4', name: 'Ana Pereira', records: genSeries(gBase: 100, sBase: 120, dBase: 80, wBase: 61.0)),
-    ]);
-    selectedPatient = patients.first;
-
-    // Inicializa os agendamentos de consultas
-    appointments.addAll([
-      Appointment(dateTime: now.add(const Duration(hours: 2)), patientId: 'p1', note: 'Retorno - revisão exames'),
-      Appointment(dateTime: now.add(const Duration(days: 1, hours: 1)), patientId: 'p2', note: 'Avaliação pressão'),
-    ]);
-
-    _refreshAlertsFromVitals();
-  }
-
-  void _refreshAlertsFromVitals() {
+  // ---------- helpers públicos ----------
+  void clearAll() {
+    patients.clear();
+    appointments.clear();
     notifications.clear();
-    
-    // Gera notificações baseadas nos registros vitais dos pacientes
-    for (final p in patients) {
-      final last = p.latestRecord();
-      if (last == null) continue;
-      
-      // Gera notificações de alerta para glicose alta
-      if ((last.glucoseMgDl ?? 0) >= 180) {
-        notifications.add(NotificationItem(
-          'Glicose alta em ${p.name.split(' ').first}',
-          'Valor ${last.glucoseMgDl!.toStringAsFixed(0)} mg/dL',
-          Icons.warning_amber_rounded,
-          Colors.redAccent,
-        ));
-      }
-
-      // Gera notificações de alerta para pressão alta
-      if ((last.systolic ?? 0) >= 140 || (last.diastolic ?? 0) >= 90) {
-        notifications.add(NotificationItem(
-          'Pressão elevada em ${p.name.split(' ').first}',
-          '${last.systolic}/${last.diastolic}',
-          Icons.monitor_heart_rounded,
-          Colors.orange,
-        ));
-      }
-    }
-
-    // Adiciona exemplo de lembrete de consulta
-    notifications.add(NotificationItem('Consulta amanhã - Maria', 'Lembrete de retorno às 10:00', Icons.event_rounded, Colors.blue));
+    selectedPatient = null;
+    notifyListeners();
   }
 
-  void selectPatient(Patient p) {
-    selectedPatient = p;
+  /// Substitui a lista de pacientes por dados vindos da API (jsonList = List<Map>)
+  void setPatientsFromJson(List<dynamic> jsonList) {
+    patients.clear();
+    for (final item in jsonList) {
+      if (item is Map<String, dynamic>) {
+        patients.add(Patient.fromJson(item));
+      } else if (item is Map) {
+        patients.add(Patient.fromJson(Map<String, dynamic>.from(item)));
+      }
+    }
+    if (patients.isNotEmpty && selectedPatient == null) selectedPatient = patients.first;
+    notifyListeners();
+  }
+
+  void setAppointmentsFromJson(List<dynamic> jsonList) {
+    appointments.clear();
+    for (final item in jsonList) {
+      if (item is Map<String, dynamic>) {
+        appointments.add(Appointment.fromJson(item));
+      } else if (item is Map) {
+        appointments.add(Appointment.fromJson(Map<String, dynamic>.from(item)));
+      }
+    }
+    notifyListeners();
+  }
+
+  // Método auxiliar para adicionar um único patient vindo do backend
+  void addOrUpdatePatientFromJson(Map<String, dynamic> j) {
+    final id = j['id'].toString();
+    final idx = patients.indexWhere((p) => p.id == id);
+    final p = Patient.fromJson(j);
+    if (idx >= 0) {
+      patients[idx] = p;
+    } else {
+      patients.add(p);
+    }
     notifyListeners();
   }
 
@@ -166,21 +185,27 @@ class AppData extends ChangeNotifier {
     int? diastolic,
     double? weightKg,
   }) {
-    final p = patients.firstWhere((e) => e.id == patientId);
-    p.records.add(VitalRecord(date: date, glucoseMgDl: glucoseMgDl, systolic: systolic, diastolic: diastolic, weightKg: weightKg));
-    _refreshAlertsFromVitals();
+    final idx = patients.indexWhere((e) => e.id == patientId);
+    if (idx == -1) return;
+    final p = patients[idx];
+    final newList = [...p.records, VitalRecord(date: date, glucoseMgDl: glucoseMgDl, systolic: systolic, diastolic: diastolic, weightKg: weightKg)];
+    patients[idx] = Patient(id: p.id, name: p.name, records: newList);
     notifyListeners();
   }
 
-  // Conta o número de alertas
-  int get alertsCount => notifications.where((n) => n.icon == Icons.warning_amber_rounded || n.icon == Icons.monitor_heart_rounded).length;
+  // Pequenos contadores (opcionais)
+  int get alertsCount {
+    int count = 0;
+    for (final n in notifications) {
+      if (n.icon == 'warning' || n.icon == 'heart') count++;
+    }
+    return count;
+  }
 
-  // Conta o número de consultas para o dia atual
   int get todayAppointmentsCount {
     final now = DateTime.now();
     return appointments.where((a) => a.dateTime.year == now.year && a.dateTime.month == now.month && a.dateTime.day == now.day).length;
   }
 }
 
-// Global singleton usado pelas páginas. Em um app maior, prefira uma DI/Provider adequada.
 final appData = AppData();

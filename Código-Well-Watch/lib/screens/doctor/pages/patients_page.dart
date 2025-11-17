@@ -23,21 +23,10 @@ class _PatientsPageState extends State<PatientsPage> {
     _loadPatients();
   }
 
-  /// Carrega apenas pacientes do médico logado
+  /// Carrega pacientes do AppData
   void _loadPatients() {
-    final auth = Provider.of<AuthService>(context, listen: false);
-    final health = Provider.of<HealthService>(context, listen: false);
-
-    // Filtra pacientes do médico
-    void _loadPatients() {
-  _patients = List.from(appData.patients); // pega todos os pacientes
-  _patients.sort((a, b) => a.name.compareTo(b.name));
-  setState(() {});
-}
-
-    // Se quiser ordenar por nome:
+    _patients = List.from(appData.patients);
     _patients.sort((a, b) => a.name.compareTo(b.name));
-
     setState(() {});
   }
 
@@ -105,21 +94,37 @@ class _PatientsPageState extends State<PatientsPage> {
   String _latestSubtitle(Patient p) {
     final last = p.latestRecord();
     if (last == null) return 'Sem dados';
+
     final d = last.date;
     String two(int n) => n.toString().padLeft(2, '0');
     final when = '${two(d.day)}/${two(d.month)}/${d.year}';
-    final g = last.glucoseMgDl != null ? '${last.glucoseMgDl!.toStringAsFixed(0)} mg/dL' : '-';
-    final pr = (last.systolic != null && last.diastolic != null) ? '${last.systolic}/${last.diastolic}' : '-';
-    final w = last.weightKg != null ? '${last.weightKg!.toStringAsFixed(1)} kg' : '-';
+
+    final g = last.glucoseMgDl != null
+        ? '${last.glucoseMgDl!.toStringAsFixed(0)} mg/dL'
+        : '-';
+
+    final pr = (last.systolic != null && last.diastolic != null)
+        ? '${last.systolic}/${last.diastolic}'
+        : '-';
+
+    final w = last.weightKg != null
+        ? '${last.weightKg!.toStringAsFixed(1)} kg'
+        : '-';
+
     return 'Último: $when • Glicose $g • PA $pr • Peso $w';
   }
 
+  /// ----------- CORRIGIDO AQUI -------------
   void _openReports(Patient p) async {
-    appData.selectPatient(p);
+    appData.selectedPatient = p;
+    appData.notifyListeners();
+
     await Navigator.pushNamed(context, '/reports');
+
     if (!mounted) return;
     setState(() {});
   }
+  /// ------------------------------------------
 
   void _contactPatient(Patient p) {
     final controller = TextEditingController();
@@ -139,18 +144,36 @@ class _PatientsPageState extends State<PatientsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  Expanded(child: Text('Enviar mensagem para ${p.name.split(' ').first}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18))),
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
+                  Expanded(
+                    child: Text(
+                      'Enviar mensagem para ${p.name.split(' ').first}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded)),
                 ]),
                 const SizedBox(height: 8),
-                TextField(controller: controller, maxLines: 3, decoration: const InputDecoration(hintText: 'Escreva sua mensagem...')),
+                TextField(
+                  controller: controller,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                      hintText: 'Escreva sua mensagem...'),
+                ),
                 const SizedBox(height: 12),
                 Align(
                   alignment: Alignment.centerRight,
                   child: FilledButton.icon(
                     onPressed: () {
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mensagem enviada (simulado).')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Mensagem enviada (simulado).')),
+                      );
                     },
                     icon: const Icon(Icons.send_rounded),
                     label: const Text('Enviar'),
@@ -170,6 +193,7 @@ class _PatientsPageState extends State<PatientsPage> {
     final dCtrl = TextEditingController();
     final wCtrl = TextEditingController();
     DateTime when = DateTime.now();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -186,19 +210,42 @@ class _PatientsPageState extends State<PatientsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  Expanded(child: Text('Adicionar medição — ${p.name}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18))),
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
+                  Expanded(
+                      child: Text('Adicionar medição — ${p.name}',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 18))),
+                  IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded)),
                 ]),
                 const SizedBox(height: 8),
-                TextField(controller: gCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Glicose (mg/dL)')),
+                TextField(
+                    controller: gCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration:
+                        const InputDecoration(labelText: 'Glicose (mg/dL)')),
                 const SizedBox(height: 8),
                 Row(children: [
-                  Expanded(child: TextField(controller: sCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Sistólica'))),
+                  Expanded(
+                      child: TextField(
+                          controller: sCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration:
+                              const InputDecoration(labelText: 'Sistólica'))),
                   const SizedBox(width: 8),
-                  Expanded(child: TextField(controller: dCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Diastólica'))),
+                  Expanded(
+                      child: TextField(
+                          controller: dCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration:
+                              const InputDecoration(labelText: 'Diastólica'))),
                 ]),
                 const SizedBox(height: 8),
-                TextField(controller: wCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Peso (kg)')),
+                TextField(
+                    controller: wCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration:
+                        const InputDecoration(labelText: 'Peso (kg)')),
                 const SizedBox(height: 8),
                 Row(children: [
                   Expanded(child: Text('Data: ${_formatDate(when)}')),
@@ -207,14 +254,19 @@ class _PatientsPageState extends State<PatientsPage> {
                     onPressed: () async {
                       final picked = await showDatePicker(
                         context: context,
-                        firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                        firstDate:
+                            DateTime.now().subtract(const Duration(days: 365)),
+                        lastDate:
+                            DateTime.now().add(const Duration(days: 365)),
                         initialDate: when,
                       );
                       if (picked != null) {
-                        final t = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(when));
+                        final t = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.fromDateTime(when));
                         if (t != null) {
-                          when = DateTime(picked.year, picked.month, picked.day, t.hour, t.minute);
+                          when = DateTime(picked.year, picked.month,
+                              picked.day, t.hour, t.minute);
                         }
                       }
                     },
@@ -226,14 +278,21 @@ class _PatientsPageState extends State<PatientsPage> {
                   alignment: Alignment.centerRight,
                   child: FilledButton.icon(
                     onPressed: () {
-                      double? g = double.tryParse(gCtrl.text.replaceAll(',', '.'));
+                      double? g =
+                          double.tryParse(gCtrl.text.replaceAll(',', '.'));
                       int? s = int.tryParse(sCtrl.text);
                       int? d = int.tryParse(dCtrl.text);
-                      double? w = double.tryParse(wCtrl.text.replaceAll(',', '.'));
+                      double? w =
+                          double.tryParse(wCtrl.text.replaceAll(',', '.'));
+
                       if (g == null && s == null && d == null && w == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Informe ao menos um valor.')));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Informe ao menos um valor.')),
+                        );
                         return;
                       }
+
                       appData.addVital(
                         patientId: p.id,
                         date: when,
@@ -242,8 +301,13 @@ class _PatientsPageState extends State<PatientsPage> {
                         diastolic: d,
                         weightKg: w,
                       );
+
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Medição adicionada.')));
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Medição adicionada.')),
+                      );
+
                       setState(() {});
                     },
                     icon: const Icon(Icons.save_rounded),
