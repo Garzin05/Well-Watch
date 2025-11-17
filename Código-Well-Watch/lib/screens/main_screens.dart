@@ -11,3 +11,7 @@ export 'package:projetowell/screens/main/agenda_page.dart';
 export 'package:projetowell/screens/main/perfil_page.dart';
 export 'package:projetowell/screens/main/mensagem_page.dart';
 export 'package:projetowell/screens/main/inicio_page.dart';
+
+class PatientProfilePage {
+  const PatientProfilePage();
+}

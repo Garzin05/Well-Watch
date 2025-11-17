@@ -15,7 +15,7 @@ class AuthService extends ChangeNotifier {
   String? specialty;
   String? hospital;
 
-  // Campos extras de paciente (opcional)
+  // Campos extras de paciente
   int? age;
   String? gender;
   String? address;
@@ -29,60 +29,60 @@ class AuthService extends ChangeNotifier {
     _loadFromPrefs();
   }
 
-  // =========================================
+  // ===========================
   // Carrega dados do SharedPreferences
-  // =========================================
+  // ===========================
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
 
-    username = prefs.getString("username");
-    email = prefs.getString("email");
-    userId = prefs.getString("userId");
-    role = prefs.getString("role");
+    username = prefs.getString("username") ?? '';
+    email = prefs.getString("email") ?? '';
+    userId = prefs.getString("userId") ?? '';
+    role = prefs.getString("role") ?? '';
 
-    // campos médicos
-    crm = prefs.getString("crm");
-    phone = prefs.getString("phone");
-    specialty = prefs.getString("specialty");
-    hospital = prefs.getString("hospital");
+    // Médicos
+    crm = prefs.getString("crm") ?? '';
+    phone = prefs.getString("phone") ?? '';
+    specialty = prefs.getString("specialty") ?? '';
+    hospital = prefs.getString("hospital") ?? '';
 
-    // campos pacientes
+    // Pacientes
     age = prefs.getInt("age");
-    gender = prefs.getString("gender");
-    address = prefs.getString("address");
-    bloodType = prefs.getString("bloodType");
-    allergies = prefs.getString("allergies");
-    medications = prefs.getString("medications");
+    gender = prefs.getString("gender") ?? '';
+    address = prefs.getString("address") ?? '';
+    bloodType = prefs.getString("bloodType") ?? '';
+    allergies = prefs.getString("allergies") ?? '';
+    medications = prefs.getString("medications") ?? '';
     height = prefs.getDouble("height");
     weight = prefs.getDouble("weight");
 
     notifyListeners();
   }
 
-  // =========================================
-  // Salva dados localmente
-  // =========================================
+  // ===========================
+  // Salva dados no SharedPreferences
+  // ===========================
   Future<void> _saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
 
-    if (username != null) prefs.setString("username", username!);
-    if (email != null) prefs.setString("email", email!);
-    if (userId != null) prefs.setString("userId", userId!);
-    if (role != null) prefs.setString("role", role!);
+    await prefs.setString("username", username ?? '');
+    await prefs.setString("email", email ?? '');
+    await prefs.setString("userId", userId ?? '');
+    await prefs.setString("role", role ?? '');
 
-    // médicos
-    if (crm != null) prefs.setString("crm", crm!);
-    if (phone != null) prefs.setString("phone", phone!);
-    if (specialty != null) prefs.setString("specialty", specialty!);
-    if (hospital != null) prefs.setString("hospital", hospital!);
+    // Médicos
+    await prefs.setString("crm", crm ?? '');
+    await prefs.setString("phone", phone ?? '');
+    await prefs.setString("specialty", specialty ?? '');
+    await prefs.setString("hospital", hospital ?? '');
 
-    // pacientes
+    // Pacientes
     if (age != null) prefs.setInt("age", age!);
-    if (gender != null) prefs.setString("gender", gender!);
-    if (address != null) prefs.setString("address", address!);
-    if (bloodType != null) prefs.setString("bloodType", bloodType!);
-    if (allergies != null) prefs.setString("allergies", allergies!);
-    if (medications != null) prefs.setString("medications", medications!);
+    await prefs.setString("gender", gender ?? '');
+    await prefs.setString("address", address ?? '');
+    await prefs.setString("bloodType", bloodType ?? '');
+    await prefs.setString("allergies", allergies ?? '');
+    await prefs.setString("medications", medications ?? '');
     if (height != null) prefs.setDouble("height", height!);
     if (weight != null) prefs.setDouble("weight", weight!);
   }
@@ -92,9 +92,9 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // =========================================
-  // LOGIN REAL USANDO API
-  // =========================================
+  // ===========================
+  // LOGIN usando API
+  // ===========================
   Future<bool> login(
     String email,
     String password, {
@@ -107,51 +107,45 @@ class AuthService extends ChangeNotifier {
         role: role,
       );
 
-      if (result["status"] == true) {
-        final user = result["user"];
+      if (result["status"] != true) return false;
 
-        // Campos comuns
-        username = user["name"] ?? user["nome"] ?? 'Usuário';
-        this.email = user["email"];
-        userId = user["id"].toString();
-        this.role = user["role"];
+      final user = result["user"];
 
-        // Campos médicos
-        if (role == 'doctor') {
-          crm = user["crm"]?.toString() ?? '';
-          phone = user["telefone"]?.toString() ?? '';
-          specialty = user["especialidade"] ?? ''; // <- correção importante
-          hospital = user["hospital_afiliado"] ?? '';
-        }
+      // Campos comuns
+      username = user["name"] ?? user["nome"] ?? 'Usuário';
+      this.email = user["email"] ?? '';
+      userId = user["id"].toString();
+      this.role = user["role"] ?? role;
 
-        // Campos pacientes
-        if (role == 'patient') {
-          phone = user["telefone"]?.toString() ?? '';
-          age = user["age"];
-          gender = user["gender"];
-          address = user["address"];
-          bloodType = user["blood_type"];
-          allergies = user["allergies"];
-          medications = user["medications"];
-          height = user["height"]?.toDouble();
-          weight = user["weight"]?.toDouble();
-        }
-
-        await _saveToPrefs();
-        notifyListeners();
-        return true;
-      } else {
-        return false;
+      if (role == 'doctor') {
+        crm = user["crm"]?.toString() ?? '';
+        phone = user["telefone"]?.toString() ?? '';
+        specialty = user["especialidade"] ?? '';
+        hospital = user["hospital_afiliado"] ?? '';
+      } else if (role == 'patient') {
+        phone = user["telefone"]?.toString() ?? '';
+        age = user["age"];
+        gender = user["gender"] ?? '';
+        address = user["address"] ?? '';
+        bloodType = user["blood_type"] ?? '';
+        allergies = user["allergies"] ?? '';
+        medications = user["medications"] ?? '';
+        height = user["height"]?.toDouble();
+        weight = user["weight"]?.toDouble();
       }
+
+      await _saveToPrefs();
+      notifyListeners();
+      return true;
     } catch (e) {
       debugPrint("❌ Erro no login: $e");
       return false;
     }
   }
 
-  // =========================================
+  // ===========================
   // LOGOUT
-  // =========================================
+  // ===========================
   Future<void> signOut() async {
     username = null;
     email = null;
@@ -172,15 +166,16 @@ class AuthService extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-
     notifyListeners();
   }
 
-  // =========================================
+  // ===========================
   // GETTERS
-  // =========================================
+  // ===========================
   bool get isDoctor => role == "doctor";
   bool get isPatient => role == "patient";
   bool get isAuthenticated =>
       username != null && email != null && userId != null;
+
+  void logout() {}
 }

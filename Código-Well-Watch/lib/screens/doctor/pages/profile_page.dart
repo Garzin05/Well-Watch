@@ -32,7 +32,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadDoctorProfile();
   }
 
-  /// Carrega perfil do médico a partir do backend
+  /// Carrega perfil do médico do backend e atualiza AuthService
   Future<void> _loadDoctorProfile() async {
     final auth = Provider.of<AuthService>(context, listen: false);
     final userId = auth.userId;
@@ -56,6 +56,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (data["status"] == true) {
         final d = data["data"];
 
+        // Preenche os campos da tela
         _name.text = d["name"] ?? "";
         _email.text = d["email"] ?? "";
         _crm.text = d["crm"] ?? "";
@@ -65,8 +66,13 @@ class _ProfilePageState extends State<ProfilePage> {
         _phone.text = d["telefone"] ?? "";
         _specialty.text = d["especialidade"] ?? "";
 
-        // Atualiza AuthService para refletir o nome real do médico
+        // Atualiza AuthService para refletir dados reais do médico
         auth.username = d["name"] ?? auth.username;
+        auth.email = d["email"] ?? auth.email;
+        auth.crm = d["crm"] ?? '';
+        auth.phone = d["telefone"] ?? '';
+        auth.specialty = d["especialidade"] ?? '';
+        auth.hospital = d["hospital_afiliado"] ?? '';
         await auth.saveLocal();
       } else {
         debugPrint("Erro ao carregar perfil: ${data["message"]}");
@@ -78,14 +84,13 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => _loading = false);
   }
 
-  /// Salva alterações do perfil no backend
+  /// Salva alterações no backend e atualiza AuthService
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _saving = true);
 
     final auth = Provider.of<AuthService>(context, listen: false);
-
     const url = "http://localhost/WellWatchAPI/update_doctor.php";
 
     try {
@@ -108,8 +113,13 @@ class _ProfilePageState extends State<ProfilePage> {
       final data = jsonDecode(res.body);
 
       if (data["status"] == true) {
-        // Atualiza AuthService
+        // Atualiza AuthService localmente
         auth.username = _name.text.trim();
+        auth.email = _email.text.trim();
+        auth.crm = _crm.text.trim();
+        auth.phone = _phone.text.trim();
+        auth.specialty = _specialty.text.trim();
+        auth.hospital = _hospital.text.trim();
         await auth.saveLocal();
 
         if (!mounted) return;
@@ -134,13 +144,18 @@ class _ProfilePageState extends State<ProfilePage> {
     Navigator.pushNamedAndRemoveUntil(context, "/login", (_) => false);
   }
 
-  Widget _field(String label, TextEditingController controller) {
+  Widget _field(String label, TextEditingController controller, {bool required = true}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(labelText: label),
-        validator: (v) => v!.isEmpty ? "Obrigatório" : null,
+        validator: (v) {
+          if (required && (v == null || v.isEmpty)) {
+            return "Obrigatório";
+          }
+          return null;
+        },
       ),
     );
   }
@@ -173,11 +188,11 @@ class _ProfilePageState extends State<ProfilePage> {
               _field("CRM", _crm),
               _field("Nome completo", _name),
               _field("E-mail", _email),
-              _field("Especialidade", _specialty),
-              _field("Data de nascimento", _birth),
-              _field("CEP", _cep),
-              _field("Hospital afiliado", _hospital),
-              _field("Telefone", _phone),
+              _field("Especialidade", _specialty, required: false),
+              _field("Data de nascimento", _birth, required: false),
+              _field("CEP", _cep, required: false),
+              _field("Hospital afiliado", _hospital, required: false),
+              _field("Telefone", _phone, required: false),
 
               const SizedBox(height: 20),
 

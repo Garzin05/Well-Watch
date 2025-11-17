@@ -1,8 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:projetowell/utils/constants.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:projetowell/services/auth_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -12,297 +12,191 @@ class PerfilPage extends StatefulWidget {
 }
 
 class _PerfilPageState extends State<PerfilPage> {
-  bool _editing = false;
+  final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _specialtyController = TextEditingController();
-  final TextEditingController _heightController = TextEditingController();
-  final TextEditingController _weightController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
+  final _name = TextEditingController();
+  final _email = TextEditingController();
+  final _phone = TextEditingController();
+  final _address = TextEditingController();
+  final _allergies = TextEditingController();
+  final _medications = TextEditingController();
+  final _age = TextEditingController();
+  final _bloodType = TextEditingController();
+
+  final _newPassword = TextEditingController();
+  final _confirmPassword = TextEditingController();
+
+  bool _loading = true;
+  bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    // Apenas placeholders visuais, sem lógica real
-    _emailController.text = 'usuario@exemplo.com';
-    _specialtyController.text = 'Endocrinologia';
-    _heightController.text = '1.75';
-    _weightController.text = '72.0';
-    _ageController.text = '34';
+    _loadProfile();
   }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _specialtyController.dispose();
-    _heightController.dispose();
-    _weightController.dispose();
-    _ageController.dispose();
-    super.dispose();
+  Future<void> _loadProfile() async {
+    final auth = Provider.of<AuthService>(context, listen: false);
+
+    try {
+      final response = await http.post(
+        Uri.parse("http://localhost/WellWatchAPI/get_patient_profile.php"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"user_id": auth.userId}),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data["status"] == true) {
+        final d = data["data"];
+        _name.text = d["name"] ?? "";
+        _email.text = d["email"] ?? "";
+        _phone.text = d["telefone"] ?? "";
+        _address.text = d["endereco"] ?? "";
+        _allergies.text = d["alergias"] ?? "";
+        _medications.text = d["medicacoes_atuais"] ?? "";
+        _age.text = d["idade"]?.toString() ?? "";
+        _bloodType.text = d["tipo_sanguineo"] ?? "";
+      }
+    } catch (e) {
+      debugPrint("Erro ao carregar perfil: $e");
+    }
+
+    setState(() => _loading = false);
   }
 
-  /// HEADER DO PERFIL
-  Widget _buildProfileHeader(AuthService auth) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.darkBlueBackground,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Column(
-        children: [
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.white,
-                child: Text(
-                  (auth.username ?? "U").substring(0, 1).toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.darkBlueBackground,
-                  ),
-                ),
-              ),
-              if (!_editing)
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.darkBlueBackground,
-                      width: 2,
-                    ),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.edit),
-                    color: AppColors.darkBlueBackground,
-                    onPressed: () => setState(() => _editing = true),
-                  ),
-                ),
-            ],
-          ),
+  Future<void> _saveProfile() async {
+    if (_newPassword.text.isNotEmpty) {
+      if (_confirmPassword.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Confirme a nova senha.")),
+        );
+        return;
+      }
+      if (_newPassword.text != _confirmPassword.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("As senhas não coincidem.")),
+        );
+        return;
+      }
+    }
 
-          const SizedBox(height: 16),
+    setState(() => _saving = true);
 
-          Text(
-            auth.username ?? "Usuário",
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+    final auth = Provider.of<AuthService>(context, listen: false);
 
-          const SizedBox(height: 8),
+    final body = {
+      "user_id": auth.userId,
+      "name": _name.text.trim(),
+      "email": _email.text.trim(),
+      "telefone": _phone.text.trim(),
+      "endereco": _address.text.trim(),
+      "alergias": _allergies.text.trim(),
+      "medicacoes_atuais": _medications.text.trim(),
+      "idade": int.tryParse(_age.text.trim()) ?? 0,
+      "tipo_sanguineo": _bloodType.text.trim(),
+    };
 
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: auth.role == "doctor"
-                  ? Colors.orangeAccent
-                  : AppColors.lightBlueAccent,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              auth.role == "doctor" ? "MÉDICO" : "PACIENTE",
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    if (_newPassword.text.isNotEmpty) {
+      body["password"] = _newPassword.text.trim();
+    }
+
+    try {
+      final res = await http.post(
+        Uri.parse("http://localhost/WellWatchAPI/update_patient.php"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      final data = jsonDecode(res.body);
+
+      if (data["status"] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Perfil atualizado com sucesso!")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data["message"] ?? "Erro ao atualizar")),
+        );
+      }
+    } catch (e) {
+      debugPrint("Erro ao salvar: $e");
+    }
+
+    setState(() => _saving = false);
   }
 
-  /// CARD DE INFORMAÇÕES
-  Widget _buildInfoCard({
-    required String title,
-    required IconData icon,
-    required List<Widget> children,
-  }) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: AppColors.darkBlueBackground),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )
-              ],
-            ),
-            const Divider(),
-            ...children,
-          ],
-        ),
-      ),
-    );
+  void _logout(BuildContext context) {
+    final auth = Provider.of<AuthService>(context, listen: false);
+    auth.logout();
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 
-  /// CAMPOS EDITÁVEIS
-  Widget _buildEditableField({
-    required String label,
-    required TextEditingController controller,
-    TextInputType? keyboardType,
-    String? suffix,
-  }) {
+  Widget _field(String label, TextEditingController controller,
+      {TextInputType? type, bool obscure = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
-        enabled: _editing,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          labelText: label,
-          suffix: suffix != null ? Text(suffix) : null,
-          border: _editing ? const OutlineInputBorder() : InputBorder.none,
-        ),
+        keyboardType: type,
+        obscureText: obscure,
+        decoration: InputDecoration(labelText: label),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthService>(context);
-
-    // Preenche com o nome do usuário real
-    _nameController.text = auth.username ?? '';
-
-    final isDoctor = auth.role == "doctor";
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Perfil'),
-        elevation: 0,
-        backgroundColor: AppColors.darkBlueBackground,
+        title: const Text("Perfil do Paciente"),
         actions: [
-          if (_editing)
-            TextButton(
-              onPressed: () async {
-                /// Atualiza apenas o nome do usuário
-                auth.username = _nameController.text;
-
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setString("auth_username", auth.username ?? "");
-
-                setState(() => _editing = false);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Perfil atualizado com sucesso!"),
-                  ),
-                );
-              },
-              child: const Text(
-                "Salvar",
-                style: TextStyle(color: Colors.white),
-              ),
+          TextButton(
+            onPressed: _saveProfile,
+            child: const Text(
+              "Salvar",
+              style: TextStyle(color: Colors.white),
             ),
+          ),
+          TextButton(
+            onPressed: () => _logout(context),
+            child: const Text(
+              "Sair",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
         ],
       ),
-
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildProfileHeader(auth),
-
-            const SizedBox(height: 20),
-
-            /// Informações Pessoais
-            _buildInfoCard(
-              title: "Informações Pessoais",
-              icon: Icons.person,
-              children: [
-                _buildEditableField(
-                  label: "Nome Completo",
-                  controller: _nameController,
-                ),
-                _buildEditableField(
-                  label: "E-mail",
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-              ],
-            ),
-
-            /// Informações do Médico
-            if (isDoctor)
-              _buildInfoCard(
-                title: "Informações Profissionais",
-                icon: Icons.medical_services,
-                children: [
-                  _buildEditableField(
-                    label: "Especialidade",
-                    controller: _specialtyController,
-                  ),
-                ],
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              _field("Nome", _name),
+              _field("E-mail", _email, type: TextInputType.emailAddress),
+              _field("Telefone", _phone),
+              _field("Endereço", _address),
+              _field("Alergias", _allergies),
+              _field("Medicações", _medications),
+              _field("Idade", _age, type: TextInputType.number),
+              _field("Tipo sanguíneo", _bloodType),
+              const SizedBox(height: 20),
+              const Divider(),
+              const Text(
+                "Alterar senha (opcional)",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-
-            /// Informações do Paciente
-            if (!isDoctor)
-              _buildInfoCard(
-                title: "Dados de Saúde",
-                icon: Icons.favorite,
-                children: [
-                  _buildEditableField(
-                    label: "Idade",
-                    controller: _ageController,
-                    keyboardType: TextInputType.number,
-                    suffix: "anos",
-                  ),
-                  _buildEditableField(
-                    label: "Altura",
-                    controller: _heightController,
-                    keyboardType: TextInputType.number,
-                    suffix: "m",
-                  ),
-                  _buildEditableField(
-                    label: "Peso",
-                    controller: _weightController,
-                    keyboardType: TextInputType.number,
-                    suffix: "kg",
-                  ),
-                ],
-              ),
-
-            const SizedBox(height: 20),
-
-            /// BOTÃO DE LOGOUT
-            if (!_editing)
-              TextButton.icon(
-                onPressed: () {
-                  auth.signOut();
-                  Navigator.pushReplacementNamed(context, "/login");
-                },
-                icon: const Icon(Icons.exit_to_app, color: Colors.red),
-                label: const Text(
-                  "Sair",
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-
-            const SizedBox(height: 20),
-          ],
+              _field("Nova senha", _newPassword, obscure: true),
+              _field("Confirmar nova senha", _confirmPassword, obscure: true),
+            ],
+          ),
         ),
       ),
     );
