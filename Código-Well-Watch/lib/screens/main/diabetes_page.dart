@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:projetowell/models/health_data.dart';
@@ -55,8 +56,7 @@ class DiabetesPage extends StatelessWidget {
                   label: 'Horário',
                   keyboardType: TextInputType.datetime,
                   validator: (v) {
-                    final regex =
-                        RegExp(r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$');
+                    final regex = RegExp(r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$');
                     if (v == null || v.isEmpty) return 'Informe o horário';
                     if (!regex.hasMatch(v)) return 'Use formato HH:MM';
                     return null;
@@ -130,7 +130,6 @@ class DiabetesDisplay extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-
         if (records.isEmpty)
           Container(
             width: double.infinity,
@@ -173,7 +172,8 @@ class DiabetesDisplay extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.darkBlueBackground, // <-- COR DO TEXTO ALTERADA
+                              color: AppColors
+                                  .darkBlueBackground, // <-- COR DO TEXTO ALTERADA
                             ),
                           ),
                         ),

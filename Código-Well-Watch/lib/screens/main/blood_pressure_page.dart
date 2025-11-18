@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:projetowell/models/health_data.dart';
@@ -47,6 +48,7 @@ class BloodPressurePage extends StatelessWidget {
                   controller: systolicController,
                   label: 'Sistólica (mmHg)',
                   keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (v) =>
                       v == null || v.isEmpty ? 'Informe a sistólica' : null,
                   prefixIcon: Icons.favorite,
@@ -56,6 +58,7 @@ class BloodPressurePage extends StatelessWidget {
                   controller: diastolicController,
                   label: 'Diastólica (mmHg)',
                   keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (v) =>
                       v == null || v.isEmpty ? 'Informe a diastólica' : null,
                   prefixIcon: Icons.favorite_border,
@@ -65,6 +68,7 @@ class BloodPressurePage extends StatelessWidget {
                   controller: heartRateController,
                   label: 'Frequência Cardíaca (bpm) — opcional',
                   keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   hint: 'Opcional',
                 ),
                 const SizedBox(height: 16),
@@ -73,8 +77,7 @@ class BloodPressurePage extends StatelessWidget {
                   label: 'Horário',
                   keyboardType: TextInputType.datetime,
                   validator: (v) {
-                    final regex =
-                        RegExp(r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$');
+                    final regex = RegExp(r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$');
                     if (v == null || v.isEmpty) return 'Informe o horário';
                     if (!regex.hasMatch(v)) return 'Use formato HH:MM';
                     return null;
@@ -153,7 +156,6 @@ class BloodPressureDisplay extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-
         if (todayRecords.isEmpty)
           Container(
             width: double.infinity,
@@ -196,14 +198,14 @@ class BloodPressureDisplay extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.darkBlueBackground, // <-- COR ALTERADA
+                              color: AppColors
+                                  .darkBlueBackground, // <-- COR ALTERADA
                             ),
                           ),
                         ),
                         IconButton(
                           onPressed: () {
-                            healthService.removeBloodPressureRecord(
-                                userId, r);
+                            healthService.removeBloodPressureRecord(userId, r);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Registro removido'),

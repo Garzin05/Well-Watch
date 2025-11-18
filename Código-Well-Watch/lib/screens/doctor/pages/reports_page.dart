@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:projetowell/models/app_data.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({super.key});
@@ -9,24 +10,79 @@ class ReportsPage extends StatefulWidget {
 }
 
 class _ReportsPageState extends State<ReportsPage> {
+  // Gera dados do gráfico a partir dos registros do paciente selecionado
+  List<FlSpot> _getGlucoseData() {
+    final patient = appData.selectedPatient;
+    if (patient == null || patient.records.isEmpty) return [];
 
-  // Dados fictícios e independentes de pacientes
-  final List<FlSpot> glucose = [
-    FlSpot(0, 110), FlSpot(1, 90), FlSpot(2, 105),
-    FlSpot(3, 130), FlSpot(4, 95), FlSpot(5, 100)
-  ];
+    return patient.records
+        .asMap()
+        .entries
+        .map((e) =>
+            FlSpot(e.key.toDouble(), e.value.glucoseMgDl?.toDouble() ?? 0))
+        .where((spot) => spot.y > 0)
+        .toList();
+  }
 
-  final List<FlSpot> pressure = [
-    FlSpot(0, 120), FlSpot(1, 118), FlSpot(2, 125),
-    FlSpot(3, 130), FlSpot(4, 115), FlSpot(5, 122)
-  ];
+  List<FlSpot> _getPressureData() {
+    final patient = appData.selectedPatient;
+    if (patient == null || patient.records.isEmpty) return [];
 
-  final List<double> weight = [72.0, 72.1, 72.3, 72.2, 72.4, 72.6];
-  final List<double> bmi = [23.5, 23.6, 23.7, 23.5, 23.6, 23.7];
+    return patient.records
+        .asMap()
+        .entries
+        .map((e) => FlSpot(e.key.toDouble(), e.value.systolic?.toDouble() ?? 0))
+        .where((spot) => spot.y > 0)
+        .toList();
+  }
+
+  List<double> _getWeightData() {
+    final patient = appData.selectedPatient;
+    if (patient == null || patient.records.isEmpty) return [];
+
+    return patient.records.map((r) => r.weightKg ?? 0).toList();
+  }
+
+  List<double> _getBmiData() {
+    final patient = appData.selectedPatient;
+    if (patient == null || patient.records.isEmpty) return [];
+
+    return patient.records.map((r) {
+      if (r.weightKg == null) return 0.0;
+      // IMC simplificado (altura não está nos dados)
+      return 22.0;
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final patient = appData.selectedPatient;
+
+    // Se não houver paciente selecionado
+    if (patient == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Relatórios')),
+        body: const Center(
+          child: Text('Nenhum paciente selecionado'),
+        ),
+      );
+    }
+
+    // Se não houver registros
+    if (patient.records.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Relatórios')),
+        body: Center(
+          child: Text('${patient.name} não possui registros de saúde'),
+        ),
+      );
+    }
+
+    final glucoseData = _getGlucoseData();
+    final pressureData = _getPressureData();
+    final weightData = _getWeightData();
+    final bmiData = _getBmiData();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Relatórios')),
@@ -39,29 +95,23 @@ class _ReportsPageState extends State<ReportsPage> {
               labels: const ['Glicose', 'Sistólica'],
               colors: [scheme.primary, scheme.secondary],
             ),
-            child: _simpleLineChart(glucose, pressure),
+            child: _simpleLineChart(glucoseData, pressureData),
           ),
-
           const SizedBox(height: 16),
-
           _Card(
             title: 'Peso e IMC (Tendência)',
             trailing: _Legend(
               labels: const ['Peso', 'IMC'],
               colors: [scheme.primary, scheme.secondary],
             ),
-            child: _simpleBarChart(weight, bmi),
+            child: _simpleBarChart(weightData, bmiData),
           ),
-
           const SizedBox(height: 16),
-
           _Card(
             title: 'Histórico Diário',
-            child: _HistoryTableClean(), // tabela limpa
+            child: _HistoryTableClean(patient: patient),
           ),
-
           const SizedBox(height: 16),
-
           Wrap(
             spacing: 12,
             runSpacing: 8,
@@ -160,10 +210,8 @@ class _Card extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w600, color: scheme.primary),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600, color: scheme.primary),
                   ),
                 ),
                 if (trailing != null) trailing!,
@@ -212,6 +260,10 @@ class _Legend extends StatelessWidget {
 }
 
 class _HistoryTableClean extends StatelessWidget {
+  final Patient patient;
+
+  const _HistoryTableClean({required this.patient});
+
   @override
   Widget build(BuildContext context) {
     return DataTable(
@@ -221,7 +273,23 @@ class _HistoryTableClean extends StatelessWidget {
         DataColumn(label: Text('Pressão')),
         DataColumn(label: Text('Peso')),
       ],
-      rows: const [], // tabela vazia
+      rows: patient.records.map((record) {
+        String two(int n) => n.toString().padLeft(2, '0');
+        final date =
+            '${two(record.date.day)}/${two(record.date.month)}/${record.date.year}';
+        final glucose = record.glucoseMgDl?.toStringAsFixed(0) ?? '-';
+        final pressure = (record.systolic != null && record.diastolic != null)
+            ? '${record.systolic}/${record.diastolic}'
+            : '-';
+        final weight = record.weightKg?.toStringAsFixed(1) ?? '-';
+
+        return DataRow(cells: [
+          DataCell(Text(date)),
+          DataCell(Text('$glucose mg/dL')),
+          DataCell(Text(pressure)),
+          DataCell(Text('$weight kg')),
+        ]);
+      }).toList(),
     );
   }
 }

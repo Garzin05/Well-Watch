@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:projetowell/utils/constants.dart';
 
 class ActivityPage extends StatefulWidget {
@@ -26,11 +27,17 @@ class _ActivityPageState extends State<ActivityPage> {
               controller: typeController,
               decoration:
                   const InputDecoration(labelText: 'Tipo (ex: Corrida)'),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Zá-ú\s]')),
+              ],
             ),
             TextField(
               controller: durationController,
               decoration: const InputDecoration(labelText: 'Duração (min)'),
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
             ),
           ],
         ),
@@ -53,6 +60,7 @@ class _ActivityPageState extends State<ActivityPage> {
           'time': DateTime.now().toIso8601String(),
         });
       });
+      Navigator.pop(context);
     }
   }
 

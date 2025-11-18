@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:animate_do/animate_do.dart';
 import 'dart:convert';
@@ -92,18 +93,18 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-           "name": _nameController.text.trim(),
-  "email": _emailController.text.trim(),
-  "password": _passwordController.text.trim(),
-  "telefone": _phoneController.text.trim(),
-  "idade": _ageController.text.trim(),
-  "genero": _gender,
-  "endereco": _addressController.text.trim(),
-  "tipo_sanguineo": _bloodType,
-  "alergias": _allergies.join(", "),
-  "medicacoes_atuais": _medications.join(", "),
-  "altura": null,
-  "peso_inicial": null
+          "name": _nameController.text.trim(),
+          "email": _emailController.text.trim(),
+          "password": _passwordController.text.trim(),
+          "telefone": _phoneController.text.trim(),
+          "idade": _ageController.text.trim(),
+          "genero": _gender,
+          "endereco": _addressController.text.trim(),
+          "tipo_sanguineo": _bloodType,
+          "alergias": _allergies.join(", "),
+          "medicacoes_atuais": _medications.join(", "),
+          "altura": null,
+          "peso_inicial": null
         }),
       );
 
@@ -113,17 +114,17 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
       if (response.statusCode == 200 && data["status"] == true) {
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
-  context,
-  MaterialPageRoute(
-    builder: (_) => RegistrationSuccessScreen(
-      userType: 'patient',
-      userName: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    ),
-  ),
-  (route) => false,
-);
+          context,
+          MaterialPageRoute(
+            builder: (_) => RegistrationSuccessScreen(
+              userType: 'patient',
+              userName: _nameController.text.trim(),
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            ),
+          ),
+          (route) => false,
+        );
       } else {
         _showError(data["message"] ?? "Erro ao cadastrar paciente.");
       }
@@ -140,8 +141,8 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
+        content:
+            Text(message, style: const TextStyle(fontWeight: FontWeight.w600)),
         backgroundColor: Colors.redAccent,
       ),
     );
@@ -248,7 +249,25 @@ class _PatientRegistrationScreenState extends State<PatientRegistrationScreen> {
                   hintText: 'Digite sua idade',
                   controller: _ageController,
                   keyboardType: TextInputType.number,
-                  prefixIcon: Icon(Icons.cake, color: theme.colorScheme.primary),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(3),
+                  ],
+                  prefixIcon:
+                      Icon(Icons.cake, color: theme.colorScheme.primary),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Informe sua idade';
+                    }
+                    final age = int.tryParse(value);
+                    if (age == null) {
+                      return 'Idade deve conter apenas números';
+                    }
+                    if (age < 1 || age > 122) {
+                      return 'Idade deve estar entre 1 e 122 anos';
+                    }
+                    return null;
+                  },
                   label: '',
                 ),
               ),

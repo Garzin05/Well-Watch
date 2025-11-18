@@ -3,6 +3,7 @@
 // ==============================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:projetowell/utils/constants.dart';
 
@@ -33,7 +34,8 @@ class _CalendarGridState extends State<CalendarGrid> {
   @override
   void initState() {
     super.initState();
-    _currentMonth = DateTime(widget.initialMonth.year, widget.initialMonth.month);
+    _currentMonth =
+        DateTime(widget.initialMonth.year, widget.initialMonth.month);
   }
 
   void _previousMonth() {
@@ -61,8 +63,18 @@ class _CalendarGridState extends State<CalendarGrid> {
 
   Widget _buildMonthHeader() {
     final monthNames = [
-      'JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO',
-      'JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO',
+      'JANEIRO',
+      'FEVEREIRO',
+      'MARÇO',
+      'ABRIL',
+      'MAIO',
+      'JUNHO',
+      'JULHO',
+      'AGOSTO',
+      'SETEMBRO',
+      'OUTUBRO',
+      'NOVEMBRO',
+      'DEZEMBRO',
     ];
 
     return Padding(
@@ -70,17 +82,25 @@ class _CalendarGridState extends State<CalendarGrid> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          IconButton(icon: const Icon(Icons.chevron_left, color: Colors.black), onPressed: _previousMonth),
+          IconButton(
+              icon: const Icon(Icons.chevron_left, color: Colors.black),
+              onPressed: _previousMonth),
           Column(
             children: [
               Text(
                 monthNames[_currentMonth.month - 1],
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+                style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
               ),
-              Text('${_currentMonth.year}', style: const TextStyle(fontSize: 16, color: Colors.black)),
+              Text('${_currentMonth.year}',
+                  style: const TextStyle(fontSize: 16, color: Colors.black)),
             ],
           ),
-          IconButton(icon: const Icon(Icons.chevron_right, color: Colors.black), onPressed: _nextMonth),
+          IconButton(
+              icon: const Icon(Icons.chevron_right, color: Colors.black),
+              onPressed: _nextMonth),
         ],
       ),
     );
@@ -96,7 +116,10 @@ class _CalendarGridState extends State<CalendarGrid> {
                 child: Text(
                   day,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.black),
                 ),
               ))
           .toList(),
@@ -106,7 +129,8 @@ class _CalendarGridState extends State<CalendarGrid> {
   Widget _buildCalendarGrid() {
     final firstDay = DateTime(_currentMonth.year, _currentMonth.month, 1);
     int offset = firstDay.weekday % 7;
-    final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
+    final daysInMonth =
+        DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
 
     final List<Widget> calendarCells = [];
 
@@ -117,8 +141,10 @@ class _CalendarGridState extends State<CalendarGrid> {
     for (int day = 1; day <= daysInMonth; day++) {
       final date = DateTime(_currentMonth.year, _currentMonth.month, day);
       final isToday = _isToday(date);
-      final isSelected = widget.selectedDate != null && _isSameDay(date, widget.selectedDate!);
-      final isHighlighted = widget.highlightedDates?.any((d) => _isSameDay(d, date)) ?? false;
+      final isSelected =
+          widget.selectedDate != null && _isSameDay(date, widget.selectedDate!);
+      final isHighlighted =
+          widget.highlightedDates?.any((d) => _isSameDay(d, date)) ?? false;
 
       calendarCells.add(
         GestureDetector(
@@ -128,16 +154,22 @@ class _CalendarGridState extends State<CalendarGrid> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.darkBlueBackground : (isHighlighted ? Colors.grey[300] : null),
+              color: isSelected
+                  ? AppColors.darkBlueBackground
+                  : (isHighlighted ? Colors.grey[300] : null),
               shape: BoxShape.circle,
-              border: isToday && !isSelected ? Border.all(color: AppColors.darkBlueBackground, width: 2) : null,
+              border: isToday && !isSelected
+                  ? Border.all(color: AppColors.darkBlueBackground, width: 2)
+                  : null,
             ),
             child: Center(
               child: Text(
                 '$day',
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.black,
-                  fontWeight: (isToday || isSelected || isHighlighted) ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: (isToday || isSelected || isHighlighted)
+                      ? FontWeight.bold
+                      : FontWeight.normal,
                   fontSize: 16,
                 ),
               ),
@@ -156,7 +188,9 @@ class _CalendarGridState extends State<CalendarGrid> {
       rows.add(
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: rowCells),
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: rowCells),
         ),
       );
     }
@@ -164,10 +198,13 @@ class _CalendarGridState extends State<CalendarGrid> {
     return Column(children: rows);
   }
 
-  bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
   bool _isToday(DateTime date) {
     final now = DateTime.now();
-    return date.year == now.year && date.month == now.month && date.day == now.day;
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
 }
 
@@ -183,7 +220,9 @@ class SaudeMonitorLogo extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Saúde Monitor', style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
+        Text('Saúde Monitor',
+            style: TextStyle(
+                color: color, fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(width: 6),
         Icon(Icons.favorite, color: color, size: 22),
       ],
@@ -209,7 +248,8 @@ class HealthDataCard extends StatelessWidget {
     this.subtitle,
     this.valueColor,
     this.icon,
-    this.onTap, required Color iconColor,
+    this.onTap,
+    required Color iconColor,
   });
 
   @override
@@ -240,12 +280,22 @@ class HealthDataCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title.toUpperCase(), style: const TextStyle(fontSize: 14, color: Colors.black54, fontWeight: FontWeight.bold)),
+                  Text(title.toUpperCase(),
+                      style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: valueColor ?? Colors.black)),
+                  Text(value,
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: valueColor ?? Colors.black)),
                   if (subtitle != null) ...[
                     const SizedBox(height: 4),
-                    Text(subtitle!, style: const TextStyle(fontSize: 16, color: Colors.black87)),
+                    Text(subtitle!,
+                        style: const TextStyle(
+                            fontSize: 16, color: Colors.black87)),
                   ],
                 ],
               ),
@@ -283,7 +333,8 @@ class AnimatedActionButton extends StatefulWidget {
   State<AnimatedActionButton> createState() => _AnimatedActionButtonState();
 }
 
-class _AnimatedActionButtonState extends State<AnimatedActionButton> with SingleTickerProviderStateMixin {
+class _AnimatedActionButtonState extends State<AnimatedActionButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   bool _isPressed = false;
@@ -291,8 +342,10 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton> with Single
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(duration: const Duration(milliseconds: 150), vsync: this);
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _controller = AnimationController(
+        duration: const Duration(milliseconds: 150), vsync: this);
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -341,7 +394,9 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton> with Single
                 ? []
                 : [
                     BoxShadow(
-                      color: (widget.backgroundColor ?? AppColors.darkBlueBackground).withOpacity(0.3),
+                      color: (widget.backgroundColor ??
+                              AppColors.darkBlueBackground)
+                          .withOpacity(0.3),
                       blurRadius: 5,
                       offset: const Offset(0, 3),
                     ),
@@ -354,12 +409,16 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton> with Single
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (widget.icon != null) ...[
-                        Icon(widget.icon, color: widget.textColor ?? Colors.white, size: 22),
+                        Icon(widget.icon,
+                            color: widget.textColor ?? Colors.white, size: 22),
                         const SizedBox(width: 8),
                       ],
                       Text(
                         widget.text,
-                        style: TextStyle(color: widget.textColor ?? Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: widget.textColor ?? Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -384,7 +443,8 @@ class MenuGridItem extends StatelessWidget {
     required this.label,
     required this.lottieAsset,
     required this.onTap,
-    this.backgroundColor, required int lottieHeight,
+    this.backgroundColor,
+    required int lottieHeight,
   });
 
   @override
@@ -399,18 +459,28 @@ class MenuGridItem extends StatelessWidget {
           color: backgroundColor ?? Colors.white,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6, offset: const Offset(0, 4)),
+            BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 6,
+                offset: const Offset(0, 4)),
           ],
           border: Border.all(color: Colors.grey.withOpacity(0.2)),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Lottie.asset(lottieAsset, height: lottieSize, width: lottieSize, fit: BoxFit.contain, repeat: true),
+            Lottie.asset(lottieAsset,
+                height: lottieSize,
+                width: lottieSize,
+                fit: BoxFit.contain,
+                repeat: true),
             const SizedBox(height: 12),
             Text(
               label,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.darkGrayText),
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.darkGrayText),
               textAlign: TextAlign.center,
             ),
           ],
@@ -428,6 +498,7 @@ class CustomTextField extends StatelessWidget {
   final String label;
   final String? hint;
   final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
   final bool obscureText;
   final String? Function(String?)? validator;
   final IconData? prefixIcon;
@@ -438,6 +509,7 @@ class CustomTextField extends StatelessWidget {
     required this.label,
     this.hint,
     this.keyboardType = TextInputType.text,
+    this.inputFormatters,
     this.obscureText = false,
     this.validator,
     this.prefixIcon,
@@ -448,6 +520,7 @@ class CustomTextField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       obscureText: obscureText,
       validator: validator,
       style: const TextStyle(fontSize: 18),

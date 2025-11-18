@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:projetowell/services/auth_service.dart';
 import 'package:projetowell/widgets/app_logo.dart';
+import 'package:projetowell/models/app_data.dart';
 
 // Importar suas páginas
 import 'reports_page.dart';
@@ -14,15 +15,6 @@ import 'profile_page.dart';
 import 'diabetes_page.dart';
 import 'blood_pressure_page.dart';
 import 'weight_page.dart';
-
-// Mock de dados
-class AppData extends ChangeNotifier {
-  int get alertsCount => 3;
-  int get todayAppointmentsCount => 5;
-  List<String> get patients => ['Paciente 1', 'Paciente 2'];
-}
-
-final appData = AppData();
 
 class DoctorMenuPage extends StatelessWidget {
   const DoctorMenuPage({super.key});
@@ -45,7 +37,6 @@ class DoctorMenuPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: healthColors['surface'],
-
       drawer: _MainDrawer(
         doctorName: doctorName,
         specialty: specialty,
@@ -82,7 +73,6 @@ class DoctorMenuPage extends StatelessWidget {
           }
         },
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
@@ -148,38 +138,50 @@ class DoctorMenuPage extends StatelessWidget {
                     RoundedFeatureButton(
                       label: 'Agenda',
                       icon: Icons.calendar_month,
-                      onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const AgendaPage())),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const AgendaPage())),
                     ),
                     RoundedFeatureButton(
                       label: 'Relatórios',
                       icon: Icons.bar_chart,
-                      onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const ReportsPage())),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ReportsPage())),
                     ),
                     RoundedFeatureButton(
                       label: 'Diabetes',
                       icon: Icons.show_chart,
-                      onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const DiabetesPage())),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const DiabetesPage())),
                     ),
                     RoundedFeatureButton(
                       label: 'Pressão\nArterial',
                       icon: Icons.favorite,
-                      onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const BloodPressurePage())),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const BloodPressurePage())),
                     ),
                     RoundedFeatureButton(
                       label: 'Peso',
                       icon: Icons.monitor_weight,
-                      onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const WeightPage())),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const WeightPage())),
                     ),
                     RoundedFeatureButton(
                       label: 'Pacientes',
                       icon: Icons.people,
-                      onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const PatientsPage())),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const PatientsPage())),
                     ),
                   ],
                 ),
@@ -288,8 +290,7 @@ class _MainDrawer extends StatelessWidget {
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text(
               'Sair',
-              style: TextStyle(
-                  color: Colors.red, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
             onTap: () {
               Navigator.pop(context);
@@ -351,8 +352,10 @@ class _HeroHeader extends StatelessWidget {
                   const AppLogo(size: 36),
                   const Spacer(),
                   IconButton(
-                    onPressed: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const NotificationsPage())),
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const NotificationsPage())),
                     icon: const Icon(Icons.notifications, color: Colors.white),
                   ),
                 ],
@@ -523,7 +526,10 @@ class BottomMenuBar extends StatelessWidget {
                   tooltip: 'Configurações',
                   icon: Icon(Icons.settings, color: primary),
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const SettingsPage()));
                   },
                 ),
               ),
@@ -542,7 +548,11 @@ class BottomMenuBar extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: primary,
                       shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.18), blurRadius: 8)],
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withOpacity(0.18),
+                            blurRadius: 8)
+                      ],
                     ),
                     child: const Icon(Icons.home, color: Colors.white),
                   ),
@@ -558,7 +568,8 @@ class BottomMenuBar extends StatelessWidget {
                   tooltip: 'Voltar',
                   icon: Icon(Icons.arrow_back, color: primary),
                   onPressed: () {
-                    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+                    if (Navigator.of(context).canPop())
+                      Navigator.of(context).pop();
                   },
                 ),
               ),

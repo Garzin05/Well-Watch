@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:projetowell/utils/constants.dart';
 
 class AlimentacaoPage extends StatefulWidget {
@@ -33,9 +34,11 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Tipo de Refeição'),
+                decoration:
+                    const InputDecoration(labelText: 'Tipo de Refeição'),
                 items: const [
-                  DropdownMenuItem(value: 'Café da Manhã', child: Text('Café da Manhã')),
+                  DropdownMenuItem(
+                      value: 'Café da Manhã', child: Text('Café da Manhã')),
                   DropdownMenuItem(value: 'Almoço', child: Text('Almoço')),
                   DropdownMenuItem(value: 'Lanche', child: Text('Lanche')),
                   DropdownMenuItem(value: 'Jantar', child: Text('Jantar')),
@@ -52,8 +55,12 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
               const SizedBox(height: 8),
               TextField(
                 controller: caloriesController,
-                decoration: const InputDecoration(labelText: 'Calorias (opcional)'),
+                decoration:
+                    const InputDecoration(labelText: 'Calorias (opcional)'),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
               ),
             ],
           ),
@@ -118,11 +125,13 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
           children: [
             Row(
               children: [
-                Icon(getMealIcon(meal['type']), color: AppColors.darkBlueBackground),
+                Icon(getMealIcon(meal['type']),
+                    color: AppColors.darkBlueBackground),
                 const SizedBox(width: 8),
                 Text(
                   meal['type'],
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 Text(
@@ -135,7 +144,8 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
             Text(meal['food'], style: const TextStyle(fontSize: 16)),
             if (meal['calories'] != null) ...[
               const SizedBox(height: 8),
-              Text('${meal['calories']} kcal', style: TextStyle(color: Colors.grey[600])),
+              Text('${meal['calories']} kcal',
+                  style: TextStyle(color: Colors.grey[600])),
             ],
           ],
         ),
@@ -155,7 +165,8 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.restaurant_menu, size: 64, color: Colors.grey[400]),
+                  Icon(Icons.restaurant_menu,
+                      size: 64, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text('Nenhuma refeição registrada hoje',
                       style: TextStyle(fontSize: 16, color: Colors.grey[600])),

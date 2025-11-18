@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:projetowell/utils/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:projetowell/services/health_service.dart';
@@ -47,6 +48,15 @@ class WeightPage extends StatelessWidget {
                     label: 'Peso (kg)',
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      TextInputFormatter.withFunction((oldValue, newValue) {
+                        if (newValue.text.isEmpty) return newValue;
+                        final parts = newValue.text.split('.');
+                        if (parts.length > 2) return oldValue;
+                        return newValue;
+                      }),
+                    ],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, informe o peso';
@@ -171,7 +181,6 @@ class WeightDataDisplay extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-
         if (todayRecords.isEmpty)
           Container(
             width: double.infinity,
@@ -221,8 +230,7 @@ class WeightDataDisplay extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 'Peso',
@@ -270,7 +278,6 @@ class WeightDataDisplay extends StatelessWidget {
               );
             }).toList(),
           ),
-
         if (recentRecords.length >= 2) ...[
           const SizedBox(height: 20),
           const Text(
@@ -333,7 +340,8 @@ class WeightDataDisplay extends StatelessWidget {
                       '${recentRecords[i].formattedDate}: ${recentRecords[i].formattedWeight}',
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: i == 0 ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            i == 0 ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ),

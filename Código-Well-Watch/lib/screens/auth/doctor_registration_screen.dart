@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -199,8 +200,24 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             labelText: 'CRM',
             hintText: 'Digite o número do CRM',
             controller: _crmController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
             prefixIcon: const Icon(Icons.badge, color: Colors.white),
-            validator: (v) => v!.isEmpty ? 'Informe o CRM' : null,
+            validator: (v) {
+              if (v == null || v.isEmpty) {
+                return 'Informe o CRM';
+              }
+              if (v.length < 4) {
+                return 'CRM deve ter pelo menos 4 dígitos';
+              }
+              if (v.length > 6) {
+                return 'CRM não pode ter mais de 6 dígitos';
+              }
+              return null;
+            },
             label: '',
           ),
           const SizedBox(height: 12),
@@ -230,8 +247,7 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             controller: _passwordController,
             obscureText: true,
             prefixIcon: const Icon(Icons.lock, color: Colors.white),
-            validator: (v) =>
-                v!.length < 6 ? 'Mínimo de 6 caracteres' : null,
+            validator: (v) => v!.length < 6 ? 'Mínimo de 6 caracteres' : null,
             label: '',
           ),
           const SizedBox(height: 12),
@@ -241,8 +257,9 @@ class _DoctorRegistrationScreenState extends State<DoctorRegistrationScreen> {
             controller: _confirmPasswordController,
             obscureText: true,
             prefixIcon: const Icon(Icons.lock_outline, color: Colors.white),
-            validator: (v) =>
-                v != _passwordController.text ? 'As senhas não coincidem' : null,
+            validator: (v) => v != _passwordController.text
+                ? 'As senhas não coincidem'
+                : null,
             label: '',
           ),
         ],

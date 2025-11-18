@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:projetowell/services/auth_service.dart';
 import 'package:projetowell/services/health_service.dart';
@@ -107,9 +108,8 @@ class _PatientsPageState extends State<PatientsPage> {
         ? '${last.systolic}/${last.diastolic}'
         : '-';
 
-    final w = last.weightKg != null
-        ? '${last.weightKg!.toStringAsFixed(1)} kg'
-        : '-';
+    final w =
+        last.weightKg != null ? '${last.weightKg!.toStringAsFixed(1)} kg' : '-';
 
     return 'Último: $when • Glicose $g • PA $pr • Peso $w';
   }
@@ -124,6 +124,7 @@ class _PatientsPageState extends State<PatientsPage> {
     if (!mounted) return;
     setState(() {});
   }
+
   /// ------------------------------------------
 
   void _contactPatient(Patient p) {
@@ -222,6 +223,7 @@ class _PatientsPageState extends State<PatientsPage> {
                 TextField(
                     controller: gCtrl,
                     keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration:
                         const InputDecoration(labelText: 'Glicose (mg/dL)')),
                 const SizedBox(height: 8),
@@ -244,8 +246,7 @@ class _PatientsPageState extends State<PatientsPage> {
                 TextField(
                     controller: wCtrl,
                     keyboardType: TextInputType.number,
-                    decoration:
-                        const InputDecoration(labelText: 'Peso (kg)')),
+                    decoration: const InputDecoration(labelText: 'Peso (kg)')),
                 const SizedBox(height: 8),
                 Row(children: [
                   Expanded(child: Text('Data: ${_formatDate(when)}')),
@@ -256,8 +257,7 @@ class _PatientsPageState extends State<PatientsPage> {
                         context: context,
                         firstDate:
                             DateTime.now().subtract(const Duration(days: 365)),
-                        lastDate:
-                            DateTime.now().add(const Duration(days: 365)),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
                         initialDate: when,
                       );
                       if (picked != null) {
@@ -265,8 +265,8 @@ class _PatientsPageState extends State<PatientsPage> {
                             context: context,
                             initialTime: TimeOfDay.fromDateTime(when));
                         if (t != null) {
-                          when = DateTime(picked.year, picked.month,
-                              picked.day, t.hour, t.minute);
+                          when = DateTime(picked.year, picked.month, picked.day,
+                              t.hour, t.minute);
                         }
                       }
                     },

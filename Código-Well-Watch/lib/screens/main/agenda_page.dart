@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:projetowell/screens/main/calendar_base_page.dart';
 
 class AgendaPage extends StatefulWidget {
@@ -17,18 +18,39 @@ class _AgendaPageState extends State<AgendaPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: const Color(0xFF0B1214),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text(
             'Novo Evento',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Color(0xFF39D2C0)),
           ),
           content: TextField(
             controller: _controller,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Zá-ú0-9\s\-]')),
+            ],
+            style: const TextStyle(
+                color: Color(0xFF39D2C0), fontWeight: FontWeight.w600),
             decoration: InputDecoration(
               hintText: 'Digite o nome do evento',
+              hintStyle:
+                  TextStyle(color: const Color(0xFF39D2C0).withOpacity(0.5)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(color: Color(0xFF39D2C0)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(color: Color(0xFF39D2C0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide:
+                    const BorderSide(color: Color(0xFF39D2C0), width: 2),
               ),
             ),
           ),
@@ -37,7 +59,7 @@ class _AgendaPageState extends State<AgendaPage> {
               onPressed: () => Navigator.pop(context),
               child: const Text(
                 'Cancelar',
-                style: TextStyle(color: Colors.redAccent),
+                style: TextStyle(color: Color(0xFF39D2C0)),
               ),
             ),
             ElevatedButton(
@@ -51,8 +73,8 @@ class _AgendaPageState extends State<AgendaPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00796B),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFF39D2C0),
+                foregroundColor: const Color(0xFF0B1214),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -101,7 +123,8 @@ class _AgendaPageState extends State<AgendaPage> {
                     color: Colors.white,
                     shadowColor: Colors.teal.withOpacity(0.3),
                     child: ListTile(
-                      leading: const Icon(Icons.event_note, color: Color(0xFF00796B)),
+                      leading: const Icon(Icons.event_note,
+                          color: Color(0xFF00796B)),
                       title: Text(
                         evento,
                         style: const TextStyle(
@@ -110,7 +133,8 @@ class _AgendaPageState extends State<AgendaPage> {
                         ),
                       ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                        icon: const Icon(Icons.delete_outline,
+                            color: Colors.redAccent),
                         onPressed: () => _removerEvento(index),
                       ),
                     ),
