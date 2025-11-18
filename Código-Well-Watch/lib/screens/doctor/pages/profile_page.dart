@@ -32,13 +32,16 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadDoctorProfile();
   }
 
-  /// Carrega perfil do médico do backend e atualiza AuthService
+  // ===========================================================
+  // 🔵 CARREGA PERFIL DO MÉDICO (CORRIGIDO — NÃO APAGA DADOS)
+  // ===========================================================
   Future<void> _loadDoctorProfile() async {
     final auth = Provider.of<AuthService>(context, listen: false);
     final userId = auth.userId;
 
     if (userId == null) {
       setState(() => _loading = false);
+      print("User ID é nulo");
       return;
     }
 
@@ -56,26 +59,25 @@ class _ProfilePageState extends State<ProfilePage> {
       if (data["status"] == true) {
         final d = data["data"];
 
-        // Preenche os campos da tela
-        _name.text = d["name"] ?? "";
-        _email.text = d["email"] ?? "";
-        _crm.text = d["crm"] ?? "";
-        _birth.text = d["data_nascimento"] ?? "";
-        _cep.text = d["cep"] ?? "";
-        _hospital.text = d["hospital_afiliado"] ?? "";
-        _phone.text = d["telefone"] ?? "";
-        _specialty.text = d["especialidade"] ?? "";
+        // 🔵 SOMENTE sobrescreve se vier valor válido
+        if (d["name"] != null) _name.text = d["name"];
+        if (d["email"] != null) _email.text = d["email"];
+        if (d["crm"] != null) _crm.text = d["crm"];
+        if (d["data_nascimento"] != null) _birth.text = d["data_nascimento"];
+        if (d["cep"] != null) _cep.text = d["cep"];
+        if (d["hospital_afiliado"] != null) _hospital.text = d["hospital_afiliado"];
+        if (d["telefone"] != null) _phone.text = d["telefone"];
+        if (d["especialidade"] != null) _specialty.text = d["especialidade"];
 
-        // Atualiza AuthService para refletir dados reais do médico
-        auth.username = d["name"] ?? auth.username;
-        auth.email = d["email"] ?? auth.email;
-        auth.crm = d["crm"] ?? '';
-        auth.phone = d["telefone"] ?? '';
-        auth.specialty = d["especialidade"] ?? '';
-        auth.hospital = d["hospital_afiliado"] ?? '';
+        // 🔵 Atualiza AuthService sem apagar valores antigos
+        if (d["name"] != null) auth.username = d["name"];
+        if (d["email"] != null) auth.email = d["email"];
+        if (d["crm"] != null) auth.crm = d["crm"];
+        if (d["telefone"] != null) auth.phone = d["telefone"];
+        if (d["especialidade"] != null) auth.specialty = d["especialidade"];
+        if (d["hospital_afiliado"] != null) auth.hospital = d["hospital_afiliado"];
+
         await auth.saveLocal();
-      } else {
-        debugPrint("Erro ao carregar perfil: ${data["message"]}");
       }
     } catch (e) {
       debugPrint("Erro ao carregar perfil: $e");
@@ -84,7 +86,9 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => _loading = false);
   }
 
-  /// Salva alterações no backend e atualiza AuthService
+  // ===========================================================
+  // 🔵 SALVA PERFIL DO MÉDICO
+  // ===========================================================
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -138,13 +142,17 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => _saving = false);
   }
 
+  // ===========================================================
+  // LOGOUT
+  // ===========================================================
   void _logout() {
     final auth = Provider.of<AuthService>(context, listen: false);
     auth.signOut();
     Navigator.pushNamedAndRemoveUntil(context, "/login", (_) => false);
   }
 
-  Widget _field(String label, TextEditingController controller, {bool required = true}) {
+  Widget _field(String label, TextEditingController controller,
+      {bool required = true}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(

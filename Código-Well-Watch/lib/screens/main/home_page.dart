@@ -325,7 +325,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(0, 'assets/lottie/monitoring.json', 'Monitoramento'),
+          _buildNavItem(0, 'assets/lottie/heartrate.json', 'Monitoramento'),
         ],
       ),
     );

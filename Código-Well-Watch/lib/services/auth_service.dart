@@ -3,19 +3,25 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projetowell/services/api_service.dart';
 
 class AuthService extends ChangeNotifier {
-  // Campos comuns
+  // ===========================
+  // DADOS COMUNS
+  // ===========================
   String? username;
   String? email;
-  String? userId; // sempre string, usada como int.parse() nas telas
-  String? role; // doctor ou patient
+  String? userId; // string para evitar crash ao parse
+  String? role; // "doctor" ou "patient"
 
-  // Campos extras de médico
+  // ===========================
+  // DADOS DO MÉDICO
+  // ===========================
   String? crm;
   String? phone;
   String? specialty;
   String? hospital;
 
-  // Campos extras de paciente
+  // ===========================
+  // DADOS DO PACIENTE
+  // ===========================
   int? age;
   String? gender;
   String? address;
@@ -30,53 +36,58 @@ class AuthService extends ChangeNotifier {
   }
 
   // ===========================
-  // Carrega dados do SharedPreferences
+  // CARREGAR DADOS LOCAIS
   // ===========================
   Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final prefs = await SharedPreferences.getInstance();
 
-    username = prefs.getString("username") ?? '';
-    email = prefs.getString("email") ?? '';
-    userId = prefs.getString("userId") ?? '';
-    role = prefs.getString("role") ?? '';
+      username = prefs.getString("username");
+      email = prefs.getString("email");
+      userId = prefs.getString("userId");
+      role = prefs.getString("role");
 
-    // Médicos
-    crm = prefs.getString("crm") ?? '';
-    phone = prefs.getString("phone") ?? '';
-    specialty = prefs.getString("specialty") ?? '';
-    hospital = prefs.getString("hospital") ?? '';
+      // Médico
+      crm = prefs.getString("crm");
+      phone = prefs.getString("phone");
+      specialty = prefs.getString("specialty");
+      hospital = prefs.getString("hospital");
 
-    // Pacientes
-    age = prefs.getInt("age");
-    gender = prefs.getString("gender") ?? '';
-    address = prefs.getString("address") ?? '';
-    bloodType = prefs.getString("bloodType") ?? '';
-    allergies = prefs.getString("allergies") ?? '';
-    medications = prefs.getString("medications") ?? '';
-    height = prefs.getDouble("height");
-    weight = prefs.getDouble("weight");
+      // Paciente
+      age = prefs.getInt("age");
+      gender = prefs.getString("gender");
+      address = prefs.getString("address");
+      bloodType = prefs.getString("bloodType");
+      allergies = prefs.getString("allergies");
+      medications = prefs.getString("medications");
+      height = prefs.getDouble("height");
+      weight = prefs.getDouble("weight");
 
-    notifyListeners();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("⚠ Erro ao carregar SharedPreferences: $e");
+    }
   }
 
   // ===========================
-  // Salva dados no SharedPreferences
+  // SALVAR DADOS LOCAIS
   // ===========================
   Future<void> _saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
 
+    // comuns
     await prefs.setString("username", username ?? '');
     await prefs.setString("email", email ?? '');
     await prefs.setString("userId", userId ?? '');
     await prefs.setString("role", role ?? '');
 
-    // Médicos
+    // Médico
     await prefs.setString("crm", crm ?? '');
     await prefs.setString("phone", phone ?? '');
     await prefs.setString("specialty", specialty ?? '');
     await prefs.setString("hospital", hospital ?? '');
 
-    // Pacientes
+    // Paciente
     if (age != null) prefs.setInt("age", age!);
     await prefs.setString("gender", gender ?? '');
     await prefs.setString("address", address ?? '');
@@ -93,7 +104,7 @@ class AuthService extends ChangeNotifier {
   }
 
   // ===========================
-  // LOGIN usando API
+  // LOGIN
   // ===========================
   Future<bool> login(
     String email,
@@ -111,18 +122,22 @@ class AuthService extends ChangeNotifier {
 
       final user = result["user"];
 
-      // Campos comuns
-      username = user["name"] ?? user["nome"] ?? 'Usuário';
+      // --- CAMPOS COMUNS ---
+      username = user["name"] ?? user["nome"] ?? "Usuário";
       this.email = user["email"] ?? '';
-      userId = user["id"].toString();
-      this.role = user["role"] ?? role;
+      userId = user["id"]?.toString() ?? '';
+      this.role = user["role"] ?? role; // fallback caso API não envie
 
-      if (role == 'doctor') {
+      // --- CAMPOS DO MÉDICO ---
+      if (this.role == "doctor") {
         crm = user["crm"]?.toString() ?? '';
         phone = user["telefone"]?.toString() ?? '';
         specialty = user["especialidade"] ?? '';
         hospital = user["hospital_afiliado"] ?? '';
-      } else if (role == 'patient') {
+      }
+
+      // --- CAMPOS DO PACIENTE ---
+      if (this.role == "patient") {
         phone = user["telefone"]?.toString() ?? '';
         age = user["age"];
         gender = user["gender"] ?? '';
@@ -130,8 +145,10 @@ class AuthService extends ChangeNotifier {
         bloodType = user["blood_type"] ?? '';
         allergies = user["allergies"] ?? '';
         medications = user["medications"] ?? '';
-        height = user["height"]?.toDouble();
-        weight = user["weight"]?.toDouble();
+        height =
+            user["height"] != null ? double.tryParse(user["height"].toString()) : null;
+        weight =
+            user["weight"] != null ? double.tryParse(user["weight"].toString()) : null;
       }
 
       await _saveToPrefs();
@@ -151,10 +168,12 @@ class AuthService extends ChangeNotifier {
     email = null;
     userId = null;
     role = null;
+
     crm = null;
     phone = null;
     specialty = null;
     hospital = null;
+
     age = null;
     gender = null;
     address = null;
@@ -175,7 +194,10 @@ class AuthService extends ChangeNotifier {
   bool get isDoctor => role == "doctor";
   bool get isPatient => role == "patient";
   bool get isAuthenticated =>
-      username != null && email != null && userId != null;
+      (username != null && username!.isNotEmpty) &&
+      (email != null && email!.isNotEmpty) &&
+      (userId != null && userId!.isNotEmpty);
 
-  void logout() {}
+  // Apenas para compatibilidade com códigos antigos
+  void logout() => signOut();
 }

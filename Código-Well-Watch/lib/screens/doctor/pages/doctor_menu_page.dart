@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:projetowell/widgets/app_logo.dart';
 import 'package:projetowell/services/auth_service.dart';
+import 'package:projetowell/widgets/app_logo.dart';
 
 // Importar suas páginas
 import 'reports_page.dart';
@@ -15,7 +15,7 @@ import 'diabetes_page.dart';
 import 'blood_pressure_page.dart';
 import 'weight_page.dart';
 
-// Mock de dados (para estatísticas, pode substituir por backend real)
+// Mock de dados
 class AppData extends ChangeNotifier {
   int get alertsCount => 3;
   int get todayAppointmentsCount => 5;
@@ -28,7 +28,7 @@ class DoctorMenuPage extends StatelessWidget {
   const DoctorMenuPage({super.key});
 
   static const healthColors = {
-    'primary': Color.fromARGB(255, 2, 31, 48),
+    'primary': Color.fromARGB(255, 2, 31, 48), // SEU AZUL ESCURO
     'accent': Color(0xFF00B8A9),
     'warning': Color(0xFFE94E77),
     'info': Color(0xFF1BA6B8),
@@ -38,36 +38,14 @@ class DoctorMenuPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthService>(context); // pega usuário logado
+    final auth = Provider.of<AuthService>(context);
+
     final doctorName = auth.username ?? 'Médico';
     final specialty = auth.specialty ?? '';
 
     return Scaffold(
       backgroundColor: healthColors['surface'],
-      appBar: AppBar(
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const AppLogo(size: 32),
-            const SizedBox(height: 8),
-            Text(
-              'Well Watch',
-              style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 20),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            tooltip: 'Notificações',
-          ),
-        ],
-        backgroundColor: healthColors['primary'],
-      ),
+
       drawer: _MainDrawer(
         doctorName: doctorName,
         specialty: specialty,
@@ -104,6 +82,7 @@ class DoctorMenuPage extends StatelessWidget {
           }
         },
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
@@ -111,49 +90,51 @@ class DoctorMenuPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _HeroHeader(doctorName: doctorName, specialty: specialty),
-              const SizedBox(height: 16),
-              Transform.translate(
-                offset: const Offset(0, -36),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: AnimatedBuilder(
-                    animation: appData,
-                    builder: (context, _) {
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: HealthStatCard(
-                              icon: Icons.people,
-                              label: 'Pacientes',
-                              value: appData.patients.length.toString(),
-                              color: const Color(0xFF1BA6B8),
-                            ),
+              const SizedBox(height: 8),
+
+              // Cards Estatísticas (posicionados abaixo do cabeçalho)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: AnimatedBuilder(
+                  animation: appData,
+                  builder: (context, _) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: HealthStatCard(
+                            icon: Icons.people,
+                            label: 'Pacientes',
+                            value: appData.patients.length.toString(),
+                            color: const Color(0xFF1BA6B8),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: HealthStatCard(
-                              icon: Icons.warning,
-                              label: 'Alertas',
-                              value: appData.alertsCount.toString(),
-                              color: const Color(0xFFE94E77),
-                            ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: HealthStatCard(
+                            icon: Icons.warning,
+                            label: 'Alertas',
+                            value: appData.alertsCount.toString(),
+                            color: const Color(0xFFE94E77),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: HealthStatCard(
-                              icon: Icons.calendar_today,
-                              label: 'Hoje',
-                              value: appData.todayAppointmentsCount.toString(),
-                              color: const Color(0xFF00B8A9),
-                            ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: HealthStatCard(
+                            icon: Icons.calendar_today,
+                            label: 'Hoje',
+                            value: appData.todayAppointmentsCount.toString(),
+                            color: const Color(0xFF00B8A9),
                           ),
-                        ],
-                      );
-                    },
-                  ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
+
               const SizedBox(height: 16),
+
+              // MENU GRID
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: GridView.count(
@@ -165,35 +146,41 @@ class DoctorMenuPage extends StatelessWidget {
                   shrinkWrap: true,
                   children: [
                     RoundedFeatureButton(
-                        label: 'Agenda',
-                        icon: Icons.calendar_month,
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const AgendaPage()))),
+                      label: 'Agenda',
+                      icon: Icons.calendar_month,
+                      onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const AgendaPage())),
+                    ),
                     RoundedFeatureButton(
-                        label: 'Relatórios',
-                        icon: Icons.bar_chart,
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const ReportsPage()))),
+                      label: 'Relatórios',
+                      icon: Icons.bar_chart,
+                      onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const ReportsPage())),
+                    ),
                     RoundedFeatureButton(
-                        label: 'Diabetes',
-                        icon: Icons.show_chart,
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const DiabetesPage()))),
+                      label: 'Diabetes',
+                      icon: Icons.show_chart,
+                      onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const DiabetesPage())),
+                    ),
                     RoundedFeatureButton(
-                        label: 'Pressão\nArterial',
-                        icon: Icons.favorite,
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const BloodPressurePage()))),
+                      label: 'Pressão\nArterial',
+                      icon: Icons.favorite,
+                      onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const BloodPressurePage())),
+                    ),
                     RoundedFeatureButton(
-                        label: 'Peso',
-                        icon: Icons.monitor_weight,
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const WeightPage()))),
+                      label: 'Peso',
+                      icon: Icons.monitor_weight,
+                      onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const WeightPage())),
+                    ),
                     RoundedFeatureButton(
-                        label: 'Pacientes',
-                        icon: Icons.people,
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const PatientsPage()))),
+                      label: 'Pacientes',
+                      icon: Icons.people,
+                      onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const PatientsPage())),
+                    ),
                   ],
                 ),
               ),
@@ -201,13 +188,14 @@ class DoctorMenuPage extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: BottomMenuBar(),
     );
   }
 }
 
-// --------------------------
-// Drawer
-// --------------------------
+// ==========================
+// DRAWER
+// ==========================
 class _MainDrawer extends StatelessWidget {
   final Function(String) onNavigate;
   final String doctorName;
@@ -231,10 +219,10 @@ class _MainDrawer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.person,
-                        size: 40, color: Colors.blue)),
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, size: 40, color: Colors.blue),
+                ),
                 const SizedBox(height: 12),
                 Text(doctorName,
                     style: GoogleFonts.poppins(
@@ -248,53 +236,61 @@ class _MainDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-              leading: const Icon(Icons.bar_chart),
-              title: const Text('Relatórios'),
-              onTap: () {
-                Navigator.pop(context);
-                onNavigate('relatorios');
-              }),
+            leading: const Icon(Icons.bar_chart),
+            title: const Text('Relatórios'),
+            onTap: () {
+              Navigator.pop(context);
+              onNavigate('relatorios');
+            },
+          ),
           ListTile(
-              leading: const Icon(Icons.calendar_month),
-              title: const Text('Agenda'),
-              onTap: () {
-                Navigator.pop(context);
-                onNavigate('agenda');
-              }),
+            leading: const Icon(Icons.calendar_month),
+            title: const Text('Agenda'),
+            onTap: () {
+              Navigator.pop(context);
+              onNavigate('agenda');
+            },
+          ),
           ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('Pacientes'),
-              onTap: () {
-                Navigator.pop(context);
-                onNavigate('pacientes');
-              }),
+            leading: const Icon(Icons.people),
+            title: const Text('Pacientes'),
+            onTap: () {
+              Navigator.pop(context);
+              onNavigate('pacientes');
+            },
+          ),
           ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Notificações'),
-              onTap: () {
-                Navigator.pop(context);
-                onNavigate('notificacoes');
-              }),
+            leading: const Icon(Icons.notifications),
+            title: const Text('Notificações'),
+            onTap: () {
+              Navigator.pop(context);
+              onNavigate('notificacoes');
+            },
+          ),
           ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Configurações'),
-              onTap: () {
-                Navigator.pop(context);
-                onNavigate('config');
-              }),
+            leading: const Icon(Icons.settings),
+            title: const Text('Configurações'),
+            onTap: () {
+              Navigator.pop(context);
+              onNavigate('config');
+            },
+          ),
           ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Perfil'),
-              onTap: () {
-                Navigator.pop(context);
-                onNavigate('perfil');
-              }),
+            leading: const Icon(Icons.person),
+            title: const Text('Perfil'),
+            onTap: () {
+              Navigator.pop(context);
+              onNavigate('perfil');
+            },
+          ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Sair',
-                style: TextStyle(
-                    color: Colors.red, fontWeight: FontWeight.bold)),
+            title: const Text(
+              'Sair',
+              style: TextStyle(
+                  color: Colors.red, fontWeight: FontWeight.bold),
+            ),
             onTap: () {
               Navigator.pop(context);
               onNavigate('sair');
@@ -306,9 +302,9 @@ class _MainDrawer extends StatelessWidget {
   }
 }
 
-// --------------------------
-// Header
-// --------------------------
+// ==========================
+// HEADER
+// ==========================
 class _HeroHeader extends StatelessWidget {
   final String doctorName;
   final String specialty;
@@ -317,109 +313,256 @@ class _HeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            DoctorMenuPage.healthColors['primary']!,
-            DoctorMenuPage.healthColors['primary']!.withOpacity(0.8),
-          ],
+    final topPad = MediaQuery.of(context).padding.top;
+    final baseHeight = 180.0;
+    final height = baseHeight + topPad;
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(18)),
+      child: Container(
+        height: height,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              DoctorMenuPage.healthColors['primary']!,
+              DoctorMenuPage.healthColors['primary']!.withOpacity(0.85),
+            ],
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Bem-vindo, $doctorName',
-                style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Text('Especialidade: ${specialty.isNotEmpty ? specialty : "Não informada"}',
-                style: GoogleFonts.poppins(
-                    color: Colors.white70, fontSize: 16)),
-          ],
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16, topPad + 8, 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Top row: menu, small centered logo, notifications
+              Row(
+                children: [
+                  Builder(builder: (ctx) {
+                    return IconButton(
+                      icon: const Icon(Icons.menu, color: Colors.white),
+                      onPressed: () => Scaffold.of(ctx).openDrawer(),
+                    );
+                  }),
+                  const Spacer(),
+                  const AppLogo(size: 36),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const NotificationsPage())),
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 6),
+
+              // Welcome texts
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bem-vindo, $doctorName',
+                      style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Especialidade: ${specialty.isNotEmpty ? specialty : "Não informada"}',
+                      style: GoogleFonts.poppins(
+                          color: Colors.white70, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// --------------------------
-// Estatísticas
-// --------------------------
+// ==========================
+// ESTATÍSTICAS
+// ==========================
 class HealthStatCard extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
   final Color color;
 
-  const HealthStatCard(
-      {super.key,
-      required this.icon,
-      required this.label,
-      required this.value,
-      required this.color});
+  const HealthStatCard({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration:
-          BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
-          Text(value,
+    return Card(
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
               style: GoogleFonts.poppins(
-                  fontSize: 20, fontWeight: FontWeight.w600, color: color)),
-          Text(label,
-              style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
-              textAlign: TextAlign.center),
-        ],
+                  fontSize: 18, fontWeight: FontWeight.w700, color: color),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[700]),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// --------------------------
-// Botões do menu
-// --------------------------
+// ==========================
+// BOTÕES DO MENU
+// ==========================
 class RoundedFeatureButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
 
-  const RoundedFeatureButton(
-      {super.key, required this.label, required this.icon, required this.onTap});
+  const RoundedFeatureButton({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        decoration:
-            BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                  color: DoctorMenuPage.healthColors['primary']!.withOpacity(0.1),
-                  shape: BoxShape.circle),
-              child: Icon(icon, color: DoctorMenuPage.healthColors['primary']),
+                color: DoctorMenuPage.healthColors['primary']!.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: DoctorMenuPage.healthColors['primary'],
+              ),
             ),
             const SizedBox(height: 8),
-            Text(label,
-                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
-                textAlign: TextAlign.center),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                  fontSize: 12, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================
+// BOTTOM MENU
+// ==========================
+class BottomMenuBar extends StatelessWidget {
+  const BottomMenuBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = DoctorMenuPage.healthColors['primary']!;
+    return BottomAppBar(
+      elevation: 8,
+      color: Colors.white,
+      notchMargin: 6,
+      child: SizedBox(
+        height: 72,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Left: Settings
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  tooltip: 'Configurações',
+                  icon: Icon(Icons.settings, color: primary),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+                  },
+                ),
+              ),
+            ),
+
+            // Center: Home as circular button
+            Expanded(
+              child: Center(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).popUntil((r) => r.isFirst);
+                  },
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: primary,
+                      shape: BoxShape.circle,
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.18), blurRadius: 8)],
+                    ),
+                    child: const Icon(Icons.home, color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+
+            // Right: Back
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  tooltip: 'Voltar',
+                  icon: Icon(Icons.arrow_back, color: primary),
+                  onPressed: () {
+                    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ),
           ],
         ),
       ),
