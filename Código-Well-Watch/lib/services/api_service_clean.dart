@@ -141,22 +141,11 @@ class ApiService {
   static Future<Map<String, dynamic>> getPatientByEmail(String email) async {
     final url = Uri.parse(
         "$baseUrl/get_patient_by_email.php?email=${Uri.encodeComponent(email.toLowerCase())}");
-    debugPrint('[API] getPatientByEmail($email) - URL: $url');
     try {
       final response =
           await http.get(url, headers: {"Accept": "application/json"});
-      debugPrint('[API] Status Code: ${response.statusCode}');
-      debugPrint('[API] Response Body: ${response.body}');
-
-      if (response.statusCode != 200) {
-        return {"status": false, "message": "Erro HTTP ${response.statusCode}"};
-      }
-
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      debugPrint('[API] getPatientByEmail Parsed: $data');
-      return data;
+      return jsonDecode(response.body);
     } catch (e) {
-      debugPrint('[API] getPatientByEmail Error: $e');
       return {"status": false, "message": "Erro de conexão: $e"};
     }
   }
@@ -166,22 +155,11 @@ class ApiService {
   // -----------------------
   static Future<Map<String, dynamic>> getAllPatientEmails() async {
     final url = Uri.parse("$baseUrl/get_all_patient_emails.php");
-    debugPrint('[API] getAllPatientEmails - URL: $url');
     try {
       final response =
           await http.get(url, headers: {"Accept": "application/json"});
-      debugPrint('[API] Status Code: ${response.statusCode}');
-      debugPrint('[API] Response Body: ${response.body}');
-
-      if (response.statusCode != 200) {
-        return {"status": false, "message": "Erro HTTP ${response.statusCode}"};
-      }
-
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      debugPrint('[API] getAllPatientEmails Parsed: $data');
-      return data;
+      return jsonDecode(response.body);
     } catch (e) {
-      debugPrint('[API] getAllPatientEmails Error: $e');
       return {"status": false, "message": "Erro de conexão: $e"};
     }
   }

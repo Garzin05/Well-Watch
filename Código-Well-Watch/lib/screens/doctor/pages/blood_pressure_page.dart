@@ -1,4 +1,8 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:projetowell/models/app_data.dart';
+import 'package:projetowell/widgets/patient_selector.dart';
 
 class BloodPressurePage extends StatefulWidget {
   const BloodPressurePage({super.key});
@@ -8,174 +12,292 @@ class BloodPressurePage extends StatefulWidget {
 }
 
 class _BloodPressurePageState extends State<BloodPressurePage> {
-  final List<Map<String, dynamic>> _records = [];
+  Patient? _selectedPatient;
+
+  static const primaryColor = Color.fromARGB(255, 2, 31, 48);
+  static const accentColor = Color(0xFFE94E77);
+
+  void _handlePatientSelected(Patient patient) {
+    setState(() => _selectedPatient = patient);
+  }
+
+  void _addBloodPressureDialog() {
+    if (_selectedPatient == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Selecione um paciente primeiro")),
+      );
+      return;
+    }
+
+    final systolicCtrl = TextEditingController();
+    final diastolicCtrl = TextEditingController();
+    final heartRateCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text(
+            "Adicionar Pressão Arterial",
+            style: TextStyle(color: primaryColor, fontWeight: FontWeight.w600),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: systolicCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: "Sistólica (mmHg)",
+                  labelStyle: const TextStyle(color: primaryColor),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: diastolicCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: "Diastólica (mmHg)",
+                  labelStyle: const TextStyle(color: primaryColor),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: heartRateCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: "Frequência Cardíaca (bpm)",
+                  labelStyle: const TextStyle(color: primaryColor),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar"),
+            ),
+            FilledButton(
+              onPressed: () {
+                final systolic = int.tryParse(systolicCtrl.text);
+                final diastolic = int.tryParse(diastolicCtrl.text);
+
+                if (systolic != null && diastolic != null) {
+                  appData.addVital(
+                    patientId: _selectedPatient!.id,
+                    date: DateTime.now(),
+                    systolic: systolic,
+                    diastolic: diastolic,
+                  );
+                  Navigator.pop(context);
+                  setState(() {});
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text("Registro adicionado com sucesso!")),
+                  );
+                }
+              },
+              child: const Text("Adicionar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Pressão Arterial')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addPressure,
-        icon: const Icon(Icons.add),
-        label: const Text('Adicionar PA'),
+      appBar: AppBar(
+        title: const Text('Pressão Arterial'),
+        backgroundColor: primaryColor,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: scheme.primary.withValues(alpha: 0.1),
-                    child: Icon(Icons.person, color: scheme.primary),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(child: Text('Paciente: —')),
-                ],
-              ),
+          Expanded(
+            flex: 0,
+            child: PatientSelector(
+              patients: appData.patients,
+              selectedPatient: _selectedPatient,
+              onPatientSelected: _handlePatientSelected,
             ),
           ),
-
-          const SizedBox(height: 16),
-
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Registros de Pressão',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-
-                  if (_records.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Center(
-                        child: Text(
-                          'Nenhum registro adicionado.',
-                          style: TextStyle(color: Colors.grey),
-                        ),
+          if (_selectedPatient != null)
+            Expanded(
+              flex: 1,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Registros de ${_selectedPatient!.name}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: primaryColor,
                       ),
                     ),
-
-                  ..._records.reversed.map((r) {
-                    return ListTile(
-                      leading: const Icon(Icons.monitor_heart),
-                      title: Text('${r["s"]}/${r["d"]} mmHg'),
-                      subtitle: Text(r["date"]),
-                    );
-                  }),
-                ],
+                    const SizedBox(height: 16),
+                    if (_selectedPatient!.records
+                        .where((r) => r.systolic != null)
+                        .isNotEmpty)
+                      Card(
+                        elevation: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: _buildChart(),
+                        ),
+                      )
+                    else
+                      Card(
+                        elevation: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Center(
+                            child: Text(
+                              'Nenhum registro',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    _buildStats(),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Histórico',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: primaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildRecords(),
+                  ],
+                ),
+              ),
+            )
+          else
+            Expanded(
+              flex: 1,
+              child: Center(
+                child: Text(
+                  'Selecione um paciente',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
               ),
             ),
-          ),
         ],
+      ),
+      floatingActionButton: _selectedPatient != null
+          ? FloatingActionButton.extended(
+              onPressed: _addBloodPressureDialog,
+              backgroundColor: primaryColor,
+              icon: const Icon(Icons.add),
+              label: const Text('Adicionar'),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildChart() {
+    final records =
+        _selectedPatient!.records.where((r) => r.systolic != null).toList();
+    return SizedBox(
+      height: 250,
+      child: LineChart(
+        LineChartData(
+          gridData: FlGridData(show: true),
+          lineBarsData: [
+            LineChartBarData(
+              spots: List.generate(records.length,
+                  (i) => FlSpot(i.toDouble(), records[i].systolic!.toDouble())),
+              isCurved: true,
+              color: accentColor,
+              barWidth: 2,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void _addPressure() {
-    final sCtrl = TextEditingController();
-    final dCtrl = TextEditingController();
-    DateTime when = DateTime.now();
+  Widget _buildStats() {
+    final records =
+        _selectedPatient!.records.where((r) => r.systolic != null).toList();
+    if (records.isEmpty) return const SizedBox.shrink();
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      builder: (context) {
-        final bottom = MediaQuery.of(context).viewInsets.bottom;
+    final systolic = records.map((r) => r.systolic!.toDouble()).toList();
+    final avg = systolic.reduce((a, b) => a + b) / systolic.length;
 
-        return Padding(
-          padding: EdgeInsets.only(bottom: bottom),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(children: [
-                  const Expanded(
-                    child: Text(
-                      'Adicionar Pressão',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-                    ),
+    return Row(
+      children: [
+        Expanded(
+          child: Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  Text('Média',
+                      style: TextStyle(fontSize: 12, color: primaryColor)),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${avg.toStringAsFixed(0)} mmHg',
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: primaryColor),
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                  ),
-                ]),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-                const SizedBox(height: 8),
+  Widget _buildRecords() {
+    final records = _selectedPatient!.records
+        .where((r) => r.systolic != null)
+        .toList()
+        .reversed
+        .toList();
+    if (records.isEmpty) return const SizedBox.shrink();
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: sCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration:
-                            const InputDecoration(labelText: 'Sistólica'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: dCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration:
-                            const InputDecoration(labelText: 'Diastólica'),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: FilledButton.icon(
-                    icon: const Icon(Icons.save),
-                    label: const Text('Salvar'),
-                    onPressed: () {
-                      final s = int.tryParse(sCtrl.text);
-                      final d = int.tryParse(dCtrl.text);
-
-                      if (s == null || d == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Informe sistólica e diastólica'),
-                          ),
-                        );
-                        return;
-                      }
-
-                      setState(() {
-                        _records.add({
-                          "s": s,
-                          "d": d,
-                          "date":
-                              "${when.day}/${when.month}/${when.year} ${when.hour}:${when.minute.toString().padLeft(2, '0')}"
-                        });
-                      });
-
-                      Navigator.pop(context);
-                    },
-                  ),
-                )
-              ],
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: records.length,
+      itemBuilder: (context, index) {
+        final record = records[index];
+        return Card(
+          elevation: 1,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: accentColor,
+              foregroundColor: Colors.white,
+              child: const Icon(Icons.favorite),
+            ),
+            title: Text(
+              '${record.systolic}/${record.diastolic} mmHg',
+              style: const TextStyle(
+                  fontWeight: FontWeight.w600, color: primaryColor),
+            ),
+            subtitle: Text(
+              DateFormat('dd/MM/yyyy').format(record.date),
+              style: TextStyle(color: Colors.grey[600]),
             ),
           ),
         );

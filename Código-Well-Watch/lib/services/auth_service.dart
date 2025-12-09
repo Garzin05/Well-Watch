@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projetowell/services/api_service.dart';
+import 'package:projetowell/models/patient_model.dart';
+import 'package:projetowell/services/storage_service.dart';
 
 class AuthService extends ChangeNotifier {
   // ===========================
@@ -145,10 +147,41 @@ class AuthService extends ChangeNotifier {
         bloodType = user["blood_type"] ?? '';
         allergies = user["allergies"] ?? '';
         medications = user["medications"] ?? '';
-        height =
-            user["height"] != null ? double.tryParse(user["height"].toString()) : null;
-        weight =
-            user["weight"] != null ? double.tryParse(user["weight"].toString()) : null;
+        height = user["height"] != null
+            ? double.tryParse(user["height"].toString())
+            : null;
+        weight = user["weight"] != null
+            ? double.tryParse(user["weight"].toString())
+            : null;
+
+        // Save patient to StorageService so it can be found by email later
+        final patient = Patient(
+          id: userId ?? '',
+          name: username ?? '',
+          email: this.email ?? '',
+          phone: phone ?? '',
+          age: age ?? 0,
+          gender: gender ?? '',
+          bloodType: bloodType ?? '',
+          address: address ?? '',
+          allergies: allergies?.split(',').map((e) => e.trim()).toList() ?? [],
+          currentMedications:
+              medications?.split(',').map((e) => e.trim()).toList() ?? [],
+          createdAt: DateTime.now().toIso8601String(),
+          height: height ?? 0.0,
+          weight: weight ?? 0.0,
+          emergencyContact: '',
+          emergencyPhone: '',
+          insuranceProvider: '',
+          insuranceNumber: '',
+          medicalHistory: [],
+          appointments: [],
+          profileImage: '',
+          vitalSigns: {},
+          password: password,
+          cpf: '',
+        );
+        await StorageService().savePatient(patient);
       }
 
       await _saveToPrefs();

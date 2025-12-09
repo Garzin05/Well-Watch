@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:projetowell/services/api_service.dart';
 import 'package:projetowell/services/auth_service.dart';
-import 'package:projetowell/services/health_service.dart';
+import 'package:projetowell/services/association_service.dart';
 import 'package:projetowell/models/app_data.dart';
 
 class PatientsPage extends StatefulWidget {
@@ -14,14 +15,40 @@ class PatientsPage extends StatefulWidget {
 }
 
 class _PatientsPageState extends State<PatientsPage> {
-  String _query = '';
+  late TextEditingController _searchController;
   List<Patient> _patients = [];
+  final _assocSvc = AssociationService();
+  final Set<String> _associatedPatientIds =
+      {}; // patient IDs associated to this doctor
+
+  static const primaryColor = Color.fromARGB(255, 2, 31, 48);
 
   @override
   void initState() {
     super.initState();
-    _query = widget.initialQuery ?? '';
+    _searchController = TextEditingController(text: widget.initialQuery ?? '');
     _loadPatients();
+    _loadAssociations();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAssociations() async {
+    try {
+      final auth = Provider.of<AuthService>(context, listen: false);
+      final doctorId = auth.userId;
+      if (doctorId == null) return;
+      final ids = await _assocSvc.listPatientIdsForDoctor(doctorId);
+      _associatedPatientIds.clear();
+      _associatedPatientIds.addAll(ids);
+      if (mounted) setState(() {});
+    } catch (e) {
+      // ignore
+    }
   }
 
   /// Carrega pacientes do AppData
@@ -34,61 +61,275 @@ class _PatientsPageState extends State<PatientsPage> {
   @override
   Widget build(BuildContext context) {
     final filtered = _patients
-        .where((p) => p.name.toLowerCase().contains(_query.toLowerCase()))
+        .where((p) =>
+            p.name.toLowerCase().contains(_searchController.text.toLowerCase()))
         .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pacientes')),
+      appBar: AppBar(
+        title: const Text('Pacientes'),
+        backgroundColor: primaryColor,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _onAddPatientPressed,
+        backgroundColor: primaryColor,
+        icon: const Icon(Icons.person_add_rounded, color: Colors.white),
+        label: const Text('Adicionar',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+      ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
+          Container(
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: TextField(
-              onChanged: (v) => setState(() => _query = v),
-              decoration: const InputDecoration(
+              controller: _searchController,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
                 hintText: 'Pesquisar paciente',
-                prefixIcon: Icon(Icons.search_rounded, color: Colors.grey),
+                hintStyle: const TextStyle(color: Colors.grey),
+                prefixIcon:
+                    const Icon(Icons.search_rounded, color: Colors.grey),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {});
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: primaryColor, width: 2),
+                ),
               ),
             ),
           ),
           const Divider(height: 1),
           Expanded(
-            child: ListView.separated(
-              itemCount: filtered.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final p = filtered[index];
-                return ListTile(
-                  leading: CircleAvatar(child: Text(p.initials)),
-                  title: Text(p.name),
-                  subtitle: Text(_latestSubtitle(p)),
-                  trailing: Wrap(
-                    spacing: 8,
-                    children: [
-                      IconButton(
-                        tooltip: 'Relatórios',
-                        onPressed: () => _openReports(p),
-                        icon: const Icon(Icons.insights_rounded),
-                      ),
-                      IconButton(
-                        tooltip: 'Contatar',
-                        onPressed: () => _contactPatient(p),
-                        icon: const Icon(Icons.chat_bubble_rounded),
-                      ),
-                      IconButton(
-                        tooltip: 'Adicionar medição',
-                        onPressed: () => _addVital(p),
-                        icon: const Icon(Icons.add_chart_rounded),
-                      ),
-                    ],
+            child: filtered.isEmpty
+                ? Center(
+                    child: Text(
+                      'Nenhum paciente encontrado',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final p = filtered[index];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          child: Text(p.initials),
+                        ),
+                        title: Text(
+                          p.name,
+                          style: const TextStyle(
+                              color: primaryColor, fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(_latestSubtitle(p)),
+                        trailing: Wrap(
+                          spacing: 8,
+                          children: [
+                            IconButton(
+                              tooltip: 'Relatórios',
+                              onPressed: () => _openReports(p),
+                              icon: const Icon(Icons.insights_rounded),
+                            ),
+                            IconButton(
+                              tooltip: 'Contatar',
+                              onPressed: () => _contactPatient(p),
+                              icon: const Icon(Icons.chat_bubble_rounded),
+                            ),
+                            IconButton(
+                              tooltip: 'Adicionar medição',
+                              onPressed: () => _addVital(p),
+                              icon: const Icon(Icons.add_chart_rounded),
+                            ),
+                            // Association button: add/remove patient for current doctor
+                            IconButton(
+                              tooltip: _associatedPatientIds.contains(p.id)
+                                  ? 'Remover paciente'
+                                  : 'Associar paciente',
+                              onPressed: () async {
+                                final auth = Provider.of<AuthService>(context,
+                                    listen: false);
+                                final doctorId = auth.userId;
+                                if (doctorId == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'ID do médico não disponível.')));
+                                  return;
+                                }
+
+                                bool ok;
+                                if (_associatedPatientIds.contains(p.id)) {
+                                  ok = await _assocSvc.removePatientFromDoctor(
+                                      doctorId: doctorId, patientId: p.id);
+                                } else {
+                                  ok = await _assocSvc.addPatientToDoctor(
+                                      doctorId: doctorId, patientId: p.id);
+                                }
+
+                                if (ok) {
+                                  await _loadAssociations();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(_associatedPatientIds
+                                                  .contains(p.id)
+                                              ? 'Paciente associado.'
+                                              : 'Paciente removido.')));
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Falha ao atualizar associação.')));
+                                }
+                              },
+                              icon: Icon(_associatedPatientIds.contains(p.id)
+                                  ? Icons.link_off_rounded
+                                  : Icons.person_add_rounded),
+                            ),
+                          ],
+                        ),
+                        onTap: () => _openReports(p),
+                      );
+                    },
                   ),
-                  onTap: () => _openReports(p),
-                );
-              },
-            ),
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _onAddPatientPressed() async {
+    final emailCtrl = TextEditingController();
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Adicionar paciente'),
+        content: TextField(
+          controller: emailCtrl,
+          decoration: const InputDecoration(
+            labelText: 'Email do paciente',
+            hintText: 'exemplo@email.com',
+          ),
+          keyboardType: TextInputType.emailAddress,
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Buscar')),
+        ],
+      ),
+    );
+
+    if (result != true) return;
+    final email = emailCtrl.text.trim().toLowerCase();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Informe o email.')));
+      return;
+    }
+
+    debugPrint('=== Iniciando busca de paciente ===');
+    debugPrint('Email procurado: $email');
+
+    // Buscar paciente do backend (API)
+    final apiResponse = await ApiService.getPatientByEmail(email);
+    debugPrint('API Response: $apiResponse');
+
+    if (apiResponse['status'] != true) {
+      debugPrint(
+          'Paciente não encontrado, buscando lista de emails disponíveis...');
+      // Buscar lista de emails disponíveis
+      final emailListResponse = await ApiService.getAllPatientEmails();
+      debugPrint('Email List Response: $emailListResponse');
+
+      // Deserialização robusta da lista de emails
+      List<String> availableEmails = [];
+      if (emailListResponse['status'] == true &&
+          emailListResponse['emails'] != null) {
+        try {
+          final emailsData = emailListResponse['emails'];
+          debugPrint('Tipo de emailsData: ${emailsData.runtimeType}');
+          if (emailsData is List) {
+            availableEmails = emailsData.map((e) => e.toString()).toList();
+            debugPrint('Emails extraídos: $availableEmails');
+          } else {
+            debugPrint('Esperado List, recebido: ${emailsData.runtimeType}');
+          }
+        } catch (e) {
+          debugPrint('Erro ao deserializar emails: $e');
+        }
+      }
+
+      final message = availableEmails.isEmpty
+          ? 'Nenhum paciente cadastrado. Emails disponíveis: nenhum'
+          : 'Paciente não encontrado. Emails cadastrados: ${availableEmails.join(", ")}';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 4)),
+      );
+      return;
+    }
+
+    // Extrair dados do paciente retornado
+    final patientData = apiResponse['patient'] as Map<String, dynamic>;
+    final patientId = patientData['id'].toString();
+    final patientName = patientData['name'] as String;
+
+    debugPrint('Paciente encontrado: ID=$patientId, Nome=$patientName');
+
+    // Converter para Patient local
+    final patient = Patient(
+      id: patientId,
+      name: patientName,
+      records: [],
+    );
+
+    // Adicionar a appData
+    appData.addPatientObject(patient);
+
+    // Associar ao médico logado
+    final auth = Provider.of<AuthService>(context, listen: false);
+    final doctorId = auth.userId;
+    if (doctorId != null) {
+      await _assocSvc.addPatientToDoctor(
+          doctorId: doctorId, patientId: patientId);
+      await _loadAssociations();
+    }
+
+    _loadPatients();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$patientName associado com sucesso.')),
     );
   }
 
@@ -117,7 +358,6 @@ class _PatientsPageState extends State<PatientsPage> {
   /// ----------- CORRIGIDO AQUI -------------
   void _openReports(Patient p) async {
     appData.selectedPatient = p;
-    appData.notifyListeners();
 
     await Navigator.pushNamed(context, '/reports');
 

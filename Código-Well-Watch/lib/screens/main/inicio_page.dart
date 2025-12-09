@@ -15,6 +15,7 @@ class InicioPage extends StatelessWidget {
     required VoidCallback onTap,
     Color? color,
   }) {
+    const darkNavyBlue = Color.fromARGB(255, 2, 31, 48);
     return Card(
       elevation: 2,
       child: InkWell(
@@ -34,6 +35,7 @@ class InicioPage extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: darkNavyBlue,
                     ),
                   ),
                 ],
@@ -41,8 +43,8 @@ class InicioPage extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 description,
-                style: TextStyle(
-                  color: Colors.grey[600],
+                style: const TextStyle(
+                  color: darkNavyBlue,
                   fontSize: 14,
                 ),
               ),
@@ -54,7 +56,7 @@ class InicioPage extends StatelessWidget {
   }
 
   // =======================================================
-  // RESUMO DE SAÚDE — CORRIGIDO 
+  // RESUMO DE SAÚDE — CORRIGIDO
   // =======================================================
   Widget _buildHealthSummaryCard(
       BuildContext context, HealthService healthService) {
@@ -84,7 +86,6 @@ class InicioPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
             if (lastGlucose != null)
               _buildHealthMetric(
                 'Glicose',
@@ -92,7 +93,6 @@ class InicioPage extends StatelessWidget {
                 Icons.bloodtype,
                 Colors.red,
               ),
-
             if (lastBP != null)
               _buildHealthMetric(
                 'Pressão Arterial',
@@ -100,7 +100,6 @@ class InicioPage extends StatelessWidget {
                 Icons.favorite,
                 Colors.red,
               ),
-
             if (lastWeight != null)
               _buildHealthMetric(
                 'Peso',
@@ -108,7 +107,6 @@ class InicioPage extends StatelessWidget {
                 Icons.monitor_weight,
                 AppColors.weightColor,
               ),
-
             if (lastGlucose == null && lastBP == null && lastWeight == null)
               const Text(
                 'Nenhuma medição registrada hoje',
@@ -272,7 +270,8 @@ class InicioPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!isDoctor) _buildHealthSummaryCard(context, healthService),
+                  if (!isDoctor)
+                    _buildHealthSummaryCard(context, healthService),
                   const SizedBox(height: 24),
                   const Text(
                     'Acesso Rápido',

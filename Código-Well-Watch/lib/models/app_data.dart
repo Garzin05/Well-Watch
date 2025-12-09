@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 
 class VitalRecord {
@@ -19,10 +18,13 @@ class VitalRecord {
   factory VitalRecord.fromJson(Map<String, dynamic> j) {
     return VitalRecord(
       date: DateTime.parse(j['date']),
-      glucoseMgDl: j['glucoseMgDl'] != null ? (j['glucoseMgDl'] as num).toDouble() : null,
+      glucoseMgDl: j['glucoseMgDl'] != null
+          ? (j['glucoseMgDl'] as num).toDouble()
+          : null,
       systolic: j['systolic'] as int?,
       diastolic: j['diastolic'] as int?,
-      weightKg: j['weightKg'] != null ? (j['weightKg'] as num).toDouble() : null,
+      weightKg:
+          j['weightKg'] != null ? (j['weightKg'] as num).toDouble() : null,
     );
   }
 
@@ -83,7 +85,8 @@ class Appointment {
   final String patientId;
   final String note;
 
-  Appointment({required this.dateTime, required this.patientId, required this.note});
+  Appointment(
+      {required this.dateTime, required this.patientId, required this.note});
 
   factory Appointment.fromJson(Map<String, dynamic> j) => Appointment(
         dateTime: DateTime.parse(j['dateTime']),
@@ -143,7 +146,8 @@ class AppData extends ChangeNotifier {
         patients.add(Patient.fromJson(Map<String, dynamic>.from(item)));
       }
     }
-    if (patients.isNotEmpty && selectedPatient == null) selectedPatient = patients.first;
+    if (patients.isNotEmpty && selectedPatient == null)
+      selectedPatient = patients.first;
     notifyListeners();
   }
 
@@ -172,8 +176,22 @@ class AppData extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addAppointment({required DateTime dateTime, required String patientId, required String note}) {
-    appointments.add(Appointment(dateTime: dateTime, patientId: patientId, note: note));
+  void addAppointment(
+      {required DateTime dateTime,
+      required String patientId,
+      required String note}) {
+    appointments
+        .add(Appointment(dateTime: dateTime, patientId: patientId, note: note));
+    notifyListeners();
+  }
+
+  void addPatientObject(Patient p) {
+    final idx = patients.indexWhere((x) => x.id == p.id);
+    if (idx >= 0) {
+      patients[idx] = p;
+    } else {
+      patients.add(p);
+    }
     notifyListeners();
   }
 
@@ -188,7 +206,15 @@ class AppData extends ChangeNotifier {
     final idx = patients.indexWhere((e) => e.id == patientId);
     if (idx == -1) return;
     final p = patients[idx];
-    final newList = [...p.records, VitalRecord(date: date, glucoseMgDl: glucoseMgDl, systolic: systolic, diastolic: diastolic, weightKg: weightKg)];
+    final newList = [
+      ...p.records,
+      VitalRecord(
+          date: date,
+          glucoseMgDl: glucoseMgDl,
+          systolic: systolic,
+          diastolic: diastolic,
+          weightKg: weightKg)
+    ];
     patients[idx] = Patient(id: p.id, name: p.name, records: newList);
     notifyListeners();
   }
@@ -204,7 +230,12 @@ class AppData extends ChangeNotifier {
 
   int get todayAppointmentsCount {
     final now = DateTime.now();
-    return appointments.where((a) => a.dateTime.year == now.year && a.dateTime.month == now.month && a.dateTime.day == now.day).length;
+    return appointments
+        .where((a) =>
+            a.dateTime.year == now.year &&
+            a.dateTime.month == now.month &&
+            a.dateTime.day == now.day)
+        .length;
   }
 }
 

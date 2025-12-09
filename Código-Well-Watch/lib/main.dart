@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:projetowell/services/auth_service.dart';
 import 'package:projetowell/services/health_service.dart';
@@ -17,9 +17,11 @@ import 'package:projetowell/screens/doctor/pages/reports_page.dart';
 import 'package:projetowell/screens/doctor/pages/settings_page.dart';
 import 'package:projetowell/screens/doctor/pages/doctor_menu_page.dart'; // <-- IMPORTANTE
 
-
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // EXCLUSÃO PERMANENTE: Limpar cache local de perfis fake
+  await _clearFakeProfilesFromCache();
 
   // Permitir app apenas em portrait
   SystemChrome.setPreferredOrientations([
@@ -38,6 +40,25 @@ void main() {
   runApp(const MyApp());
 }
 
+/// Limpa permanentemente qualquer dado de perfis fake do cache local
+Future<void> _clearFakeProfilesFromCache() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Limpar todas as chaves relacionadas a pacientes/usuários
+    await prefs.remove('patients_list');
+    await prefs.remove('cached_patients');
+    await prefs.remove('glucose_records');
+    await prefs.remove('weight_records');
+    await prefs.remove('bp_records');
+    await prefs.remove('medication_records');
+
+    debugPrint('[STARTUP] Cache de perfis fake limpo com sucesso');
+  } catch (e) {
+    debugPrint('[STARTUP] Erro ao limpar cache: $e');
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -48,7 +69,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<AuthService>(create: (_) => AuthService()),
         ChangeNotifierProvider<HealthService>(create: (_) => HealthService()),
       ],
-
       child: MaterialApp(
         title: 'Well Watch',
 

@@ -490,7 +490,9 @@ class RoundedFeatureButton extends StatelessWidget {
             Text(
               label,
               style: GoogleFonts.poppins(
-                  fontSize: 12, fontWeight: FontWeight.w500),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: DoctorMenuPage.healthColors['primary']),
               textAlign: TextAlign.center,
             ),
           ],
