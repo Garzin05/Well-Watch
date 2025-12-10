@@ -71,26 +71,38 @@ class DiabetesPage extends StatelessWidget {
           if (!formKey.currentState!.validate()) return;
 
           final auth = Provider.of<AuthService>(context, listen: false);
+          debugPrint('[DIABETES_PAGE] 🔐 auth.userId (raw): ${auth.userId}');
+
           final userId = int.tryParse(auth.userId ?? '') ?? 0;
+          debugPrint('[DIABETES_PAGE] 🔐 userId (converted): $userId');
 
           if (userId == 0) {
+            debugPrint('[DIABETES_PAGE] ❌ userId é 0! Abortando.');
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Erro: Usuário não identificado')));
             Navigator.pop(context);
             return;
           }
 
+          final glucoseValue =
+              double.tryParse(glucoseController.text.trim()) ?? 0.0;
+          debugPrint('[DIABETES_PAGE] 📊 Glicose valor: $glucoseValue mg/dL');
+
           final healthService =
               Provider.of<HealthService>(context, listen: false);
 
+          debugPrint(
+              '[DIABETES_PAGE] 📤 Chamando healthService.addGlucoseRecord()');
           healthService.addGlucoseRecord(
             userId,
             GlucoseRecord(
-              glucoseLevel:
-                  double.tryParse(glucoseController.text.trim()) ?? 0.0,
+              glucoseLevel: glucoseValue,
               time: timeController.text.trim(),
               date: DateTime.now(),
             ),
           );
 
+          debugPrint('[DIABETES_PAGE] ✅ addGlucoseRecord() chamado');
           Navigator.pop(context);
         },
       ),

@@ -149,9 +149,10 @@ class _PatientsPageState extends State<PatientsPage> {
                         title: Text(
                           p.name,
                           style: const TextStyle(
-                              color: primaryColor, fontWeight: FontWeight.w600),
+                              color: Colors.white, fontWeight: FontWeight.w600),
                         ),
-                        subtitle: Text(_latestSubtitle(p)),
+                        subtitle: Text(_latestSubtitle(p),
+                            style: const TextStyle(color: Colors.grey)),
                         trailing: Wrap(
                           spacing: 8,
                           children: [
@@ -304,15 +305,59 @@ class _PatientsPageState extends State<PatientsPage> {
     // Extrair dados do paciente retornado
     final patientData = apiResponse['patient'] as Map<String, dynamic>;
     final patientId = patientData['id'].toString();
+    final patientIdInt = int.tryParse(patientId) ?? 0;
     final patientName = patientData['name'] as String;
 
     debugPrint('Paciente encontrado: ID=$patientId, Nome=$patientName');
+
+    // Buscar medições do paciente
+    debugPrint('Buscando medições para patient_id=$patientIdInt...');
+    final measurementsResponse =
+        await ApiService.getPatientMeasurements(patientIdInt);
+
+    List<VitalRecord> records = [];
+    if (measurementsResponse['status'] == true &&
+        measurementsResponse['measurements'] != null) {
+      try {
+        final measurements = measurementsResponse['measurements'] as List;
+        debugPrint('Encontradas ${measurements.length} medições');
+
+        for (final m in measurements) {
+          if (m is Map<String, dynamic>) {
+            // Converter medição para VitalRecord
+            // type_id: 1=glucose, 2=pressure, 3=weight
+            final typeId = m['type_id'] as int?;
+            final recordedAt = m['recorded_at'] as String?;
+
+            VitalRecord record = VitalRecord(
+              date: recordedAt != null
+                  ? DateTime.parse(recordedAt)
+                  : DateTime.now(),
+              glucoseMgDl:
+                  typeId == 1 ? (m['glucose_value'] as num?)?.toDouble() : null,
+              systolic: typeId == 2 ? m['systolic'] as int? : null,
+              diastolic: typeId == 2 ? m['diastolic'] as int? : null,
+              weightKg:
+                  typeId == 3 ? (m['weight_value'] as num?)?.toDouble() : null,
+            );
+            records.add(record);
+            debugPrint('Medição adicionada: type=$typeId, date=${record.date}');
+          }
+        }
+      } catch (e) {
+        debugPrint('Erro ao processar medições: $e');
+      }
+    } else {
+      debugPrint('Nenhuma medição encontrada para o paciente');
+    }
+
+    debugPrint('Total de records a adicionar: ${records.length}');
 
     // Converter para Patient local
     final patient = Patient(
       id: patientId,
       name: patientName,
-      records: [],
+      records: records,
     );
 
     // Adicionar a appData

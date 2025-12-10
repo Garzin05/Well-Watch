@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projetowell/models/app_data.dart';
 import 'package:projetowell/widgets/patient_selector.dart';
+import 'package:projetowell/services/api_service.dart';
 
 class DiabetesPage extends StatefulWidget {
   const DiabetesPage({super.key});
@@ -29,6 +30,32 @@ class _DiabetesPageState extends State<DiabetesPage> {
     setState(() {
       _selectedPatient = patient;
     });
+
+    // Carrega medições de glicose do paciente da API
+    _loadGlucoseMeasurements(patient.id);
+  }
+
+  Future<void> _loadGlucoseMeasurements(String patientId) async {
+    try {
+      final measurements = await ApiService.getGlucoseMeasurements(patientId);
+      if (mounted && measurements.isNotEmpty) {
+        setState(() {
+          if (_selectedPatient != null) {
+            _selectedPatient = Patient(
+              id: _selectedPatient!.id,
+              name: _selectedPatient!.name,
+              records: [
+                ..._selectedPatient!.records
+                    .where((r) => r.glucoseMgDl == null),
+                ...measurements,
+              ],
+            );
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('[DiabetesPage] Erro ao carregar medições: $e');
+    }
   }
 
   void _addGlucoseDialog() {

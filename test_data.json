@@ -1,0 +1,6 @@
+﻿{
+  "patient_id": 5,
+  "type_code": "glucose",
+  "glucose_value": 150.0,
+  "recorded_at": "2024-12-10T17:30:00Z"
+}

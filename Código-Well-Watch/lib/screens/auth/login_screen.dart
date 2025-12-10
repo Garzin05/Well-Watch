@@ -45,25 +45,41 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
+      debugPrint('[LOGIN_SCREEN] 🔐 Login iniciado: email=$email, role=$role');
+
       // Preferimos usar o AuthService (ele já salva no SharedPreferences)
       final auth = Provider.of<AuthService>(context, listen: false);
       final logged = await auth.login(email, password, role: role);
 
+      debugPrint(
+          '[LOGIN_SCREEN] 🔐 Login status: $logged, userId=${auth.userId}');
+
       if (logged) {
+        debugPrint(
+            '[LOGIN_SCREEN] ✅ Login bem-sucedido! userId=${auth.userId}');
+
         // AuthService já salvou username, email, userId, role no SharedPreferences
         // Agora atualizamos o HealthService com o userId numérico
-        final healthService = Provider.of<HealthService>(context, listen: false);
+        final healthService =
+            Provider.of<HealthService>(context, listen: false);
 
         // Proteção: se auth.userId for nulo, tentamos buscar no servidor direto (fallback)
         if (auth.userId != null && auth.userId!.isNotEmpty) {
           final int userId = int.tryParse(auth.userId!) ?? 0;
+          debugPrint(
+              '[LOGIN_SCREEN] 📊 Convertido userId String→Int: ${auth.userId} → $userId');
           healthService.currentUserId = userId;
         } else {
+          debugPrint(
+              '[LOGIN_SCREEN] ⚠️ auth.userId é nulo! Usando fallback...');
           // fallback: chamar ApiService.login direto para obter id (raro)
-          final response = await ApiService.login(email: email, password: password, role: role);
+          final response = await ApiService.login(
+              email: email, password: password, role: role);
           if (response["status"] == true && response["user"]?["id"] != null) {
             final userId = response["user"]["id"];
-            healthService.currentUserId = userId is int ? userId : int.tryParse(userId.toString()) ?? 0;
+            debugPrint('[LOGIN_SCREEN] 🔄 Fallback userId obtido: $userId');
+            healthService.currentUserId =
+                userId is int ? userId : int.tryParse(userId.toString()) ?? 0;
             // opcional: atualizar auth.userId também
             auth.userId = healthService.currentUserId?.toString();
             await auth.saveLocal();
@@ -71,10 +87,12 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         // notifica para garantir que listeners atualizem
-        healthService.notifyListeners();
+        // healthService.notifyListeners();  // Comentado: só pode ser chamado dentro da classe
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login realizado com sucesso!"), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text("Login realizado com sucesso!"),
+              backgroundColor: Colors.green),
         );
 
         if (role == 'doctor') {
@@ -83,10 +101,11 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacementNamed(context, AppRoutes.home);
         }
       } else {
+        debugPrint('[LOGIN_SCREEN] ❌ Credenciais inválidas');
         _showError("E-mail ou senha incorretos.");
       }
     } catch (e) {
-      debugPrint('Erro no _handleLogin: $e');
+      debugPrint('[LOGIN_SCREEN] ❌ Erro: $e');
       _showError("Erro ao conectar com o servidor.");
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -176,25 +195,31 @@ class _LoginScreenState extends State<LoginScreen> {
                         ChoiceChip(
                           label: const Text('Paciente'),
                           labelStyle: TextStyle(
-                            color: !_selectedIsDoctor ? Colors.white : Colors.black87,
+                            color: !_selectedIsDoctor
+                                ? Colors.white
+                                : Colors.black87,
                             fontWeight: FontWeight.w600,
                           ),
                           backgroundColor: Colors.grey.shade200,
                           selectedColor: primaryColor,
                           selected: !_selectedIsDoctor,
-                          onSelected: (v) => setState(() => _selectedIsDoctor = !v),
+                          onSelected: (v) =>
+                              setState(() => _selectedIsDoctor = !v),
                         ),
                         const SizedBox(width: 12),
                         ChoiceChip(
                           label: const Text('Médico'),
                           labelStyle: TextStyle(
-                            color: _selectedIsDoctor ? Colors.white : Colors.black87,
+                            color: _selectedIsDoctor
+                                ? Colors.white
+                                : Colors.black87,
                             fontWeight: FontWeight.w600,
                           ),
                           backgroundColor: Colors.grey.shade200,
                           selectedColor: primaryColor,
                           selected: _selectedIsDoctor,
-                          onSelected: (v) => setState(() => _selectedIsDoctor = v),
+                          onSelected: (v) =>
+                              setState(() => _selectedIsDoctor = v),
                         ),
                       ],
                     ),
@@ -220,7 +245,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, AppRoutes.passwordRecovery);
+                          Navigator.pushNamed(
+                              context, AppRoutes.passwordRecovery);
                         },
                         style: TextButton.styleFrom(
                           foregroundColor: primaryColor,

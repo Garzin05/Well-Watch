@@ -40,22 +40,19 @@ class HealthService extends ChangeNotifier {
 
       if (glucoseJson != null) {
         final map = jsonDecode(glucoseJson) as Map<String, dynamic>;
-        _glucoseByUser = map.map((k, v) => MapEntry(
-            int.parse(k),
+        _glucoseByUser = map.map((k, v) => MapEntry(int.parse(k),
             (v as List).map((e) => GlucoseRecord.fromJson(e)).toList()));
       }
 
       if (weightJson != null) {
         final map = jsonDecode(weightJson) as Map<String, dynamic>;
-        _weightByUser = map.map((k, v) => MapEntry(
-            int.parse(k),
+        _weightByUser = map.map((k, v) => MapEntry(int.parse(k),
             (v as List).map((e) => WeightRecord.fromJson(e)).toList()));
       }
 
       if (bpJson != null) {
         final map = jsonDecode(bpJson) as Map<String, dynamic>;
-        _bpByUser = map.map((k, v) => MapEntry(
-            int.parse(k),
+        _bpByUser = map.map((k, v) => MapEntry(int.parse(k),
             (v as List).map((e) => BloodPressureRecord.fromJson(e)).toList()));
       }
 
@@ -76,20 +73,20 @@ class HealthService extends ChangeNotifier {
 
     await prefs.setString(
       _glucoseKey,
-      jsonEncode(_glucoseByUser.map((k, v) =>
-          MapEntry(k.toString(), v.map((e) => e.toJson()).toList()))),
+      jsonEncode(_glucoseByUser.map(
+          (k, v) => MapEntry(k.toString(), v.map((e) => e.toJson()).toList()))),
     );
 
     await prefs.setString(
       _weightKey,
-      jsonEncode(_weightByUser.map((k, v) =>
-          MapEntry(k.toString(), v.map((e) => e.toJson()).toList()))),
+      jsonEncode(_weightByUser.map(
+          (k, v) => MapEntry(k.toString(), v.map((e) => e.toJson()).toList()))),
     );
 
     await prefs.setString(
       _bpKey,
-      jsonEncode(_bpByUser.map((k, v) =>
-          MapEntry(k.toString(), v.map((e) => e.toJson()).toList()))),
+      jsonEncode(_bpByUser.map(
+          (k, v) => MapEntry(k.toString(), v.map((e) => e.toJson()).toList()))),
     );
   }
 
@@ -109,10 +106,14 @@ class HealthService extends ChangeNotifier {
   // Métodos por data
   // -----------------------
   List<GlucoseRecord> getGlucoseForDate(int userId, DateTime date) =>
-      (_glucoseByUser[userId] ?? []).where((r) => isSameDay(r.date, date)).toList();
+      (_glucoseByUser[userId] ?? [])
+          .where((r) => isSameDay(r.date, date))
+          .toList();
 
   List<WeightRecord> getWeightForDate(int userId, DateTime date) =>
-      (_weightByUser[userId] ?? []).where((r) => isSameDay(r.date, date)).toList();
+      (_weightByUser[userId] ?? [])
+          .where((r) => isSameDay(r.date, date))
+          .toList();
 
   List<BloodPressureRecord> getBPForDate(int userId, DateTime date) =>
       (_bpByUser[userId] ?? []).where((r) => isSameDay(r.date, date)).toList();
@@ -121,6 +122,8 @@ class HealthService extends ChangeNotifier {
   // Adicionar registros
   // -----------------------
   Future<void> addGlucoseRecord(int userId, GlucoseRecord record) async {
+    debugPrint(
+        '[HEALTH_SERVICE] ➕ Adicionando glicose para userId=$userId: ${record.glucoseLevel} mg/dL');
     final list = _glucoseByUser[userId] ?? [];
     list.add(record);
     list.sort(_compareRecords);
@@ -129,10 +132,16 @@ class HealthService extends ChangeNotifier {
     await saveData();
 
     // Salvar no banco via API
-    await ApiService.insertMeasurement(patientId: userId, glucose: record);
+    debugPrint(
+        '[HEALTH_SERVICE] 📤 Enviando para API: patientId=$userId, glucose=${record.glucoseLevel}');
+    final response =
+        await ApiService.insertMeasurement(patientId: userId, glucose: record);
+    debugPrint('[HEALTH_SERVICE] 📥 Resposta da API: $response');
   }
 
   Future<void> addWeightRecord(int userId, WeightRecord record) async {
+    debugPrint(
+        '[HEALTH_SERVICE] ➕ Adicionando peso para userId=$userId: ${record.weight} kg');
     final list = _weightByUser[userId] ?? [];
     list.add(record);
     list.sort(_compareRecords);
@@ -140,10 +149,17 @@ class HealthService extends ChangeNotifier {
     notifyListeners();
     await saveData();
 
-    await ApiService.insertMeasurement(patientId: userId, weight: record);
+    debugPrint(
+        '[HEALTH_SERVICE] 📤 Enviando para API: patientId=$userId, weight=${record.weight}');
+    final response =
+        await ApiService.insertMeasurement(patientId: userId, weight: record);
+    debugPrint('[HEALTH_SERVICE] 📥 Resposta da API: $response');
   }
 
-  Future<void> addBloodPressureRecord(int userId, BloodPressureRecord record) async {
+  Future<void> addBloodPressureRecord(
+      int userId, BloodPressureRecord record) async {
+    debugPrint(
+        '[HEALTH_SERVICE] ➕ Adicionando pressão para userId=$userId: ${record.systolic}/${record.diastolic} mmHg');
     final list = _bpByUser[userId] ?? [];
     list.add(record);
     list.sort(_compareRecords);
@@ -151,7 +167,11 @@ class HealthService extends ChangeNotifier {
     notifyListeners();
     await saveData();
 
-    await ApiService.insertMeasurement(patientId: userId, bp: record);
+    debugPrint(
+        '[HEALTH_SERVICE] 📤 Enviando para API: patientId=$userId, pressure=${record.systolic}/${record.diastolic}');
+    final response =
+        await ApiService.insertMeasurement(patientId: userId, bp: record);
+    debugPrint('[HEALTH_SERVICE] 📥 Resposta da API: $response');
   }
 
   // -----------------------
@@ -159,7 +179,10 @@ class HealthService extends ChangeNotifier {
   // -----------------------
   Future<void> removeGlucoseRecord(int userId, GlucoseRecord record) async {
     final list = _glucoseByUser[userId] ?? [];
-    list.removeWhere((r) => r.date == record.date && r.time == record.time && r.glucoseLevel == record.glucoseLevel);
+    list.removeWhere((r) =>
+        r.date == record.date &&
+        r.time == record.time &&
+        r.glucoseLevel == record.glucoseLevel);
     _glucoseByUser[userId] = list;
     notifyListeners();
     await saveData();
@@ -167,13 +190,17 @@ class HealthService extends ChangeNotifier {
 
   Future<void> removeWeightRecord(int userId, WeightRecord record) async {
     final list = _weightByUser[userId] ?? [];
-    list.removeWhere((r) => r.date == record.date && r.time == record.time && r.weight == record.weight);
+    list.removeWhere((r) =>
+        r.date == record.date &&
+        r.time == record.time &&
+        r.weight == record.weight);
     _weightByUser[userId] = list;
     notifyListeners();
     await saveData();
   }
 
-  Future<void> removeBloodPressureRecord(int userId, BloodPressureRecord record) async {
+  Future<void> removeBloodPressureRecord(
+      int userId, BloodPressureRecord record) async {
     final list = _bpByUser[userId] ?? [];
     list.removeWhere((r) =>
         r.date == record.date &&

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projetowell/models/app_data.dart';
 import 'package:projetowell/widgets/patient_selector.dart';
+import 'package:projetowell/services/api_service.dart';
 
 class BloodPressurePage extends StatefulWidget {
   const BloodPressurePage({super.key});
@@ -19,6 +20,29 @@ class _BloodPressurePageState extends State<BloodPressurePage> {
 
   void _handlePatientSelected(Patient patient) {
     setState(() => _selectedPatient = patient);
+    _loadPressureMeasurements(patient.id);
+  }
+
+  Future<void> _loadPressureMeasurements(String patientId) async {
+    try {
+      final measurements = await ApiService.getPressureMeasurements(patientId);
+      if (mounted && measurements.isNotEmpty) {
+        setState(() {
+          if (_selectedPatient != null) {
+            _selectedPatient = Patient(
+              id: _selectedPatient!.id,
+              name: _selectedPatient!.name,
+              records: [
+                ..._selectedPatient!.records.where((r) => r.systolic == null),
+                ...measurements,
+              ],
+            );
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('[BloodPressurePage] Erro ao carregar medições: $e');
+    }
   }
 
   void _addBloodPressureDialog() {

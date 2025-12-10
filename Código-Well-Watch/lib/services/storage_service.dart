@@ -1,8 +1,10 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 import '../models/patient_model.dart';
 import '../models/doctor_model.dart';
+import 'api_service.dart';
 
 class StorageService {
   Future<void> savePatient(Patient patient) async {
@@ -62,6 +64,19 @@ class StorageService {
   }
 
   Future<Patient?> getPatientByEmail(String email) async {
+    // Primeiro tenta buscar da API (servidor/BD)
+    final apiResult = await ApiService.getPatientByEmail(email);
+
+    if (apiResult['status'] == true && apiResult['patient'] != null) {
+      try {
+        final patientData = apiResult['patient'] as Map<String, dynamic>;
+        return Patient.fromJson(patientData);
+      } catch (e) {
+        debugPrint('[STORAGE] Erro ao parsear paciente da API: $e');
+      }
+    }
+
+    // Se falhar na API, tenta SharedPreferences como fallback
     final prefs = await SharedPreferences.getInstance();
     final key = 'patient_$email';
     final raw = prefs.getString(key);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projetowell/models/app_data.dart';
 import 'package:projetowell/widgets/patient_selector.dart';
+import 'package:projetowell/services/api_service.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({super.key});
@@ -19,6 +20,38 @@ class _ReportsPageState extends State<ReportsPage> {
 
   void _handlePatientSelected(Patient patient) {
     setState(() => _selectedPatient = patient);
+    _loadAllMeasurements(patient.id);
+  }
+
+  Future<void> _loadAllMeasurements(String patientId) async {
+    try {
+      final glucose = await ApiService.getGlucoseMeasurements(patientId);
+      final pressure = await ApiService.getPressureMeasurements(patientId);
+      final weight = await ApiService.getWeightMeasurements(patientId);
+
+      if (mounted) {
+        setState(() {
+          if (_selectedPatient != null) {
+            final allMeasurements = <VitalRecord>[
+              ..._selectedPatient!.records.where((r) =>
+                  r.glucoseMgDl == null &&
+                  r.systolic == null &&
+                  r.weightKg == null),
+              ...glucose,
+              ...pressure,
+              ...weight,
+            ];
+            _selectedPatient = Patient(
+              id: _selectedPatient!.id,
+              name: _selectedPatient!.name,
+              records: allMeasurements,
+            );
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('[ReportsPage] Erro ao carregar medições: $e');
+    }
   }
 
   @override
